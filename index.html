@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLANNING HEBDOMADAIRE ASTEC-SUD-OUEST</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .sync-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            z-index: 2000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .sync-status.synced {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .sync-status.syncing {
+            background: #FF9800;
+            color: white;
+        }
+
+        .sync-status.error {
+            background: #f44336;
+            color: white;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .year-selector {
+            padding: 8px 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+        }
+
+        .team-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #9C27B0;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #7B1FA2;
+        }
+
+        .btn-atelier {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-atelier:hover {
+            background: #1976D2;
+        }
+
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .btn-warning {
+            background: #FF9800;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #F57C00;
+        }
+
+        .btn-print {
+            background: #9C27B0;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #7B1FA2;
+        }
+
+        .btn-vacation {
+            background: #A1887F;
+            color: white;
+        }
+
+        .btn-vacation:hover {
+            background: #8D6E63;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+
+        .legend-arret {
+            background: repeating-linear-gradient(
+                45deg,
+                #fff9c4,
+                #fff9c4 5px,
+                #f4e896 5px,
+                #f4e896 10px
+            );
+        }
+
+        .legend-atelier {
+            background: #2196F3;
+        }
+
+        .legend-atelier-stagiaire {
+            background: repeating-linear-gradient(
+                45deg,
+                #2196F3,
+                #2196F3 5px,
+                #1976D2 5px,
+                #1976D2 10px
+            );
+        }
+
+        .legend-charge {
+            background: #4CAF50;
+        }
+
+        .legend-charge-stagiaire {
+            background: repeating-linear-gradient(
+                45deg,
+                #4CAF50,
+                #4CAF50 5px,
+                #388E3C 5px,
+                #388E3C 10px
+            );
+        }
+
+        .legend-bureau {
+            background: #FF9800;
+        }
+
+        .legend-bureau-stagiaire {
+            background: repeating-linear-gradient(
+                45deg,
+                #FF9800,
+                #FF9800 5px,
+                #F57C00 5px,
+                #F57C00 10px
+            );
+        }
+
+        .planning-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .planning-table th,
+        .planning-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .planning-table th {
+            background: #9C27B0;
+            color: white;
+            font-weight: bold;
+        }
+
+        .planning-table td.personnel-cell {
+            background: white;
+            font-weight: bold;
+        }
+
+        .personnel-atelier {
+            background: #2196F3 !important;
+            color: white;
+        }
+
+        .personnel-atelier.stagiaire {
+            background: repeating-linear-gradient(
+                45deg,
+                #2196F3,
+                #2196F3 5px,
+                #1976D2 5px,
+                #1976D2 10px
+            ) !important;
+        }
+
+        .personnel-chargeaffaire {
+            background: #4CAF50 !important;
+            color: white;
+        }
+
+        .personnel-chargeaffaire.stagiaire {
+            background: repeating-linear-gradient(
+                45deg,
+                #4CAF50,
+                #4CAF50 5px,
+                #388E3C 5px,
+                #388E3C 10px
+            ) !important;
+        }
+
+        .personnel-bureau {
+            background: #FF9800 !important;
+            color: white;
+        }
+
+        .personnel-bureau.stagiaire {
+            background: repeating-linear-gradient(
+                45deg,
+                #FF9800,
+                #FF9800 5px,
+                #F57C00 5px,
+                #F57C00 10px
+            ) !important;
+        }
+
+        .holiday {
+            background: #ffebee;
+            font-weight: bold;
+        }
+
+        .vacation {
+            background: #fff9c4;
+            font-style: italic;
+        }
+
+        .arret-travail {
+            background: repeating-linear-gradient(
+                45deg,
+                #fff9c4,
+                #fff9c4 5px,
+                #f4e896 5px,
+                #f4e896 10px
+            );
+            font-style: italic;
+        }
+
+        .work-cell {
+            background: #e3f2fd;
+            cursor: pointer;
+            min-height: 60px;
+            vertical-align: top;
+            padding: 5px;
+            font-size: 11px;
+        }
+
+        .work-cell:hover {
+            background: #bbdefb;
+        }
+
+        .work-info {
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        .work-info strong {
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .day-select {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 8px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .personnel-list {
+            margin-top: 20px;
+        }
+
+        .personnel-item {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .personnel-item h4 {
+            margin-bottom: 10px;
+            color: #2196F3;
+        }
+
+        .personnel-item button {
+            margin-top: 10px;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        @media print {
+            @page {
+                size: A3 landscape;
+                margin: 1cm;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+
+            .header,
+            .team-buttons,
+            .btn-print,
+            .no-print,
+            .sync-status {
+                display: none !important;
+            }
+
+            .planning-table {
+                page-break-inside: avoid;
+            }
+
+            .planning-table th,
+            .planning-table td {
+                padding: 6px;
+                font-size: 10px;
+            }
+        }
+
+        .week-navigation {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .week-info {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .week-number {
+            color: #9C27B0;
+            font-size: 14px;
+        }
+
+        .add-personnel-btn {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .delete-options {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff3e0;
+            border-radius: 4px;
+            border: 1px solid #ff9800;
+        }
+
+        .delete-options h4 {
+            margin-bottom: 10px;
+            color: #f57c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="sync-status syncing" id="syncStatus">Synchronisation...</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Planning Hebdomadaire Astec-sud-ouest (Collaboratif)</h1>
+            <div class="logo-container">
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div>
+                        <label for="yearSelect">Année : </label>
+                        <select id="yearSelect" class="year-selector"></select>
+                    </div>
+                    <div>
+                        <label for="weekNumber">Semaine N° : </label>
+                        <input type="number" id="weekNumber" class="year-selector" style="width: 80px;" min="1" max="53" placeholder="1-53">
+                        <button class="btn btn-primary" onclick="goToWeek()" style="margin-left: 5px; padding: 8px 15px;">Aller</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="team-buttons no-print">
+            <button class="btn btn-atelier" onclick="openTeamModal('atelier')">Personnel Atelier</button>
+            <button class="btn btn-success" onclick="openTeamModal('chargeaffaire')">Personnel Chargé d'affaire</button>
+            <button class="btn btn-warning" onclick="openTeamModal('bureau')">Personnel Bureau</button>
+            <button class="btn btn-vacation" onclick="openVacationModal()">Congés Personnel</button>
+            <button class="btn btn-print" onclick="printPlanning()">Imprimer</button>
+        </div>
+
+        <div class="week-navigation no-print">
+            <button class="btn btn-primary" onclick="previousWeek()">← Semaine précédente</button>
+            <span class="week-info" id="weekInfo"></span>
+            <button class="btn btn-primary" onclick="nextWeek()">Semaine suivante →</button>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color legend-atelier"></div>
+                <span>Personnel Atelier</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-atelier-stagiaire"></div>
+                <span>Atelier Stagiaire/Alternant</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-charge"></div>
+                <span>Chargé d'affaire</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-charge-stagiaire"></div>
+                <span>Chargé d'affaire Stagiaire/Alternant</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-bureau"></div>
+                <span>Personnel Bureau</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-bureau-stagiaire"></div>
+                <span>Bureau Stagiaire/Alternant</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color vacation"></div>
+                <span>Congés</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-arret"></div>
+                <span>Arrêt de travail</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color holiday"></div>
+                <span>Jour férié</span>
+            </div>
+        </div>
+
+        <table class="planning-table" id="planningTable">
+            <thead>
+                <tr id="tableHeader"></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+
+        <button class="btn btn-success add-personnel-btn no-print" onclick="addPersonnelRow()">+ Ajouter une ligne de personnel</button>
+    </div>
+
+    <div id="teamModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle"></h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Nom du personnel</label>
+                <input type="text" id="personnelName" placeholder="Nom et prénom">
+            </div>
+
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="stagiaire" style="width: auto; margin-right: 5px;">
+                    Stagiaire/Alternant
+                </label>
+            </div>
+
+            <button class="btn btn-success" onclick="addPersonnel()">Ajouter</button>
+
+            <div class="personnel-list" id="personnelList"></div>
+        </div>
+    </div>
+
+    <div id="vacationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Gestion des Congés</h2>
+                <span class="close" onclick="closeVacationModal()">&times;</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Sélectionner un membre du personnel</label>
+                <select id="vacationPersonnelSelect" class="day-select">
+                    <option value="">-- Choisir un personnel --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Date de début des congés</label>
+                <input type="date" id="vacationStartDate">
+            </div>
+
+            <div class="form-group">
+                <label>Date de fin des congés (incluse)</label>
+                <input type="date" id="vacationEndDate">
+            </div>
+
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="arretTravail">
+                    <span>Arrêt de travail</span>
+                </label>
+            </div>
+
+            <button class="btn btn-success" onclick="addVacationPeriod()">Ajouter la période de congés</button>
+
+            <div class="personnel-list" id="vacationList"></div>
+        </div>
+    </div>
+
+    <div id="workModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Détails de l'affectation</h2>
+                <span class="close" onclick="closeWorkModal()">&times;</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Nom du client</label>
+                <input type="text" id="clientName" placeholder="Nom du client">
+            </div>
+
+            <div class="form-group">
+                <label>Site / Affaire</label>
+                <input type="text" id="siteName" placeholder="Site ou affaire">
+            </div>
+
+            <div class="form-group">
+                <label>Appliquer à ces jours de la semaine :</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="applyMonday" value="1"> Lundi</label>
+                    <label class="checkbox-label"><input type="checkbox" id="applyTuesday" value="2"> Mardi</label>
+                    <label class="checkbox-label"><input type="checkbox" id="applyWednesday" value="3"> Mercredi</label>
+                    <label class="checkbox-label"><input type="checkbox" id="applyThursday" value="4"> Jeudi</label>
+                    <label class="checkbox-label"><input type="checkbox" id="applyFriday" value="5"> Vendredi</label>
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="saveWorkInfo()">Enregistrer</button>
+
+            <div class="delete-options" id="deleteOptions" style="display:none;">
+                <h4>Supprimer l'affectation</h4>
+                <button class="btn btn-danger" onclick="deleteCurrentDay()">Supprimer uniquement ce jour</button>
+                <button class="btn btn-danger" onclick="deleteAllSelectedDays()">Supprimer tous les jours sélectionnés</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentYear = new Date().getFullYear();
+        let currentWeekStart = getMonday(new Date());
+        let currentTeam = '';
+        let allPersonnel = {
+            atelier: [],
+            chargeaffaire: [],
+            bureau: []
+        };
+        let planningData = {};
+        let displayedPersonnel = [];
+        let vacationPeriods = [];
+        let currentWorkCell = null;
+        let syncInterval = null;
+        let isLocalChange = false;
+
+        const holidays = {
+            2024: [
+                {date: '2024-01-01', name: 'Nouvel An'},
+                {date: '2024-04-01', name: 'Lundi de Pâques'},
+                {date: '2024-05-01', name: 'Fête du Travail'},
+                {date: '2024-05-08', name: 'Victoire 1945'},
+                {date: '2024-05-09', name: 'Ascension'},
+                {date: '2024-05-20', name: 'Lundi de Pentecôte'},
+                {date: '2024-07-14', name: 'Fête Nationale'},
+                {date: '2024-08-15', name: 'Assomption'},
+                {date: '2024-11-01', name: 'Toussaint'},
+                {date: '2024-11-11', name: 'Armistice 1918'},
+                {date: '2024-12-25', name: 'Noël'}
+            ],
+            2025: [
+                {date: '2025-01-01', name: 'Nouvel An'},
+                {date: '2025-04-21', name: 'Lundi de Pâques'},
+                {date: '2025-05-01', name: 'Fête du Travail'},
+                {date: '2025-05-08', name: 'Victoire 1945'},
+                {date: '2025-05-29', name: 'Ascension'},
+                {date: '2025-06-09', name: 'Lundi de Pentecôte'},
+                {date: '2025-07-14', name: 'Fête Nationale'},
+                {date: '2025-08-15', name: 'Assomption'},
+                {date: '2025-11-01', name: 'Toussaint'},
+                {date: '2025-11-11', name: 'Armistice 1918'},
+                {date: '2025-12-25', name: 'Noël'}
+            ],
+            2026: [
+                {date: '2026-01-01', name: 'Nouvel An'},
+                {date: '2026-04-06', name: 'Lundi de Pâques'},
+                {date: '2026-05-01', name: 'Fête du Travail'},
+                {date: '2026-05-08', name: 'Victoire 1945'},
+                {date: '2026-05-14', name: 'Ascension'},
+                {date: '2026-05-25', name: 'Lundi de Pentecôte'},
+                {date: '2026-07-14', name: 'Fête Nationale'},
+                {date: '2026-08-15', name: 'Assomption'},
+                {date: '2026-11-01', name: 'Toussaint'},
+                {date: '2026-11-11', name: 'Armistice 1918'},
+                {date: '2026-12-25', name: 'Noël'}
+            ]
+        };
+
+        async function loadFromStorage() {
+            try {
+                updateSyncStatus('syncing');
+                
+                const results = await Promise.allSettled([
+                    window.storage.get('astec_personnel_shared', true).catch(() => null),
+                    window.storage.get('astec_planning_shared', true).catch(() => null),
+                    window.storage.get('astec_displayed_shared', true).catch(() => null),
+                    window.storage.get('astec_vacations_shared', true).catch(() => null)
+                ]);
+
+                const [personnelResult, planningResult, displayedResult, vacationsResult] = results.map(r => r.status === 'fulfilled' ? r.value : null);
+
+                if (personnelResult?.value) {
+                    allPersonnel = JSON.parse(personnelResult.value);
+                }
+                if (planningResult?.value) {
+                    planningData = JSON.parse(planningResult.value);
+                }
+                if (displayedResult?.value) {
+                    displayedPersonnel = JSON.parse(displayedResult.value);
+                }
+                if (vacationsResult?.value) {
+                    vacationPeriods = JSON.parse(vacationsResult.value);
+                }
+
+                updateSyncStatus('synced');
+            } catch (e) {
+                console.log('Première utilisation - initialisation en cours');
+                updateSyncStatus('synced');
+            }
+        }
+
+        async function saveToStorage() {
+            if (!isLocalChange) return;
+            
+            try {
+                updateSyncStatus('syncing');
+                
+                await Promise.all([
+                    window.storage.set('astec_personnel_shared', JSON.stringify(allPersonnel), true),
+                    window.storage.set('astec_planning_shared', JSON.stringify(planningData), true),
+                    window.storage.set('astec_displayed_shared', JSON.stringify(displayedPersonnel), true),
+                    window.storage.set('astec_vacations_shared', JSON.stringify(vacationPeriods), true)
+                ]);
+
+                updateSyncStatus('synced');
+                setTimeout(() => {
+                    const statusEl = document.getElementById('syncStatus');
+                    if (statusEl.classList.contains('synced')) {
+                        statusEl.style.opacity = '0';
+                        setTimeout(() => statusEl.style.opacity = '1', 2000);
+                    }
+                }, 1000);
+            } catch (e) {
+                console.error('Erreur de sauvegarde:', e);
+                updateSyncStatus('error');
+                setTimeout(() => updateSyncStatus('synced'), 3000);
+            }
+        }
+
+        function updateSyncStatus(status) {
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.className = 'sync-status ' + status;
+            
+            switch(status) {
+                case 'synced':
+                    statusEl.textContent = '✓ Synchronisé';
+                    break;
+                case 'syncing':
+                    statusEl.textContent = '⟳ Synchronisation...';
+                    break;
+                case 'error':
+                    statusEl.textContent = '✗ Erreur de synchronisation';
+                    break;
+            }
+        }
+
+        async function syncData() {
+            if (isLocalChange) {
+                isLocalChange = false;
+                return;
+            }
+            
+            try {
+                const results = await Promise.allSettled([
+                    window.storage.get('astec_personnel_shared', true).catch(() => null),
+                    window.storage.get('astec_planning_shared', true).catch(() => null),
+                    window.storage.get('astec_displayed_shared', true).catch(() => null),
+                    window.storage.get('astec_vacations_shared', true).catch(() => null)
+                ]);
+
+                const [personnelResult, planningResult, displayedResult, vacationsResult] = results.map(r => r.status === 'fulfilled' ? r.value : null);
+
+                let hasChanges = false;
+
+                if (personnelResult?.value) {
+                    const newPersonnel = JSON.parse(personnelResult.value);
+                    if (JSON.stringify(newPersonnel) !== JSON.stringify(allPersonnel)) {
+                        allPersonnel = newPersonnel;
+                        hasChanges = true;
+                    }
+                }
+
+                if (planningResult?.value) {
+                    const newPlanning = JSON.parse(planningResult.value);
+                    if (JSON.stringify(newPlanning) !== JSON.stringify(planningData)) {
+                        planningData = newPlanning;
+                        hasChanges = true;
+                    }
+                }
+
+                if (displayedResult?.value) {
+                    const newDisplayed = JSON.parse(displayedResult.value);
+                    if (JSON.stringify(newDisplayed) !== JSON.stringify(displayedPersonnel)) {
+                        displayedPersonnel = newDisplayed;
+                        hasChanges = true;
+                    }
+                }
+
+                if (vacationsResult?.value) {
+                    const newVacations = JSON.parse(vacationsResult.value);
+                    if (JSON.stringify(newVacations) !== JSON.stringify(vacationPeriods)) {
+                        vacationPeriods = newVacations;
+                        hasChanges = true;
+                    }
+                }
+
+                if (hasChanges) {
+                    generatePlanning();
+                }
+            } catch (e) {
+                // Erreur silencieuse pour la synchronisation en arrière-plan
+            }
+        }
+
+        function startSync() {
+            syncInterval = setInterval(syncData, 2000);
+        }
+
+        function getMonday(d) {
+            d = new Date(d);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
+        }
+
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return weekNo;
+        }
+
+        function getDateFromWeekNumber(year, week) {
+            const jan4 = new Date(year, 0, 4);
+            const monday = getMonday(jan4);
+            monday.setDate(monday.getDate() + (week - 1) * 7);
+            return monday;
+        }
+
+        function goToWeek() {
+            const weekNum = parseInt(document.getElementById('weekNumber').value);
+            if (!weekNum || weekNum < 1 || weekNum > 53) {
+                alert('Veuillez entrer un numéro de semaine valide (1-53)');
+                return;
+            }
+            currentWeekStart = getDateFromWeekNumber(currentYear, weekNum);
+            generatePlanning();
+        }
+
+        function formatDate(date) {
+            const d = new Date(date);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${year}-${month}-${day}`;
+        }
+
+        function getWeekKey(date) {
+            return formatDate(getMonday(date));
+        }
+
+        function isHoliday(date) {
+            const dateStr = formatDate(date);
+            const yearHolidays = holidays[date.getFullYear()] || [];
+            return yearHolidays.find(h => h.date === dateStr);
+        }
+
+        function initYearSelector() {
+            const select = document.getElementById('yearSelect');
+            for (let year = 2024; year <= 2030; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                if (year === currentYear) option.selected = true;
+                select.appendChild(option);
+            }
+            select.addEventListener('change', (e) => {
+                const oldWeekNumber = getWeekNumber(currentWeekStart);
+                currentYear = parseInt(e.target.value);
+                currentWeekStart = getDateFromWeekNumber(currentYear, oldWeekNumber);
+                generatePlanning();
+            });
+        }
+
+        function generatePlanning() {
+            const header = document.getElementById('tableHeader');
+            const body = document.getElementById('tableBody');
+            const weekInfo = document.getElementById('weekInfo');
+            
+            header.innerHTML = '<th>Personnel</th>';
+            body.innerHTML = '';
+
+            const weekDays = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+            const dates = [];
+
+            for (let i = 0; i < 5; i++) {
+                const date = new Date(currentWeekStart);
+                date.setDate(date.getDate() + i);
+                dates.push(date);
+
+                const holiday = isHoliday(date);
+                const className = holiday ? 'holiday' : '';
+                
+                const dateStr = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+                const headerText = holiday ? `${weekDays[i]}<br>${dateStr}<br>${holiday.name}` : `${weekDays[i]}<br>${dateStr}`;
+                
+                header.innerHTML += `<th class="${className}">${headerText}</th>`;
+            }
+
+            const friday = new Date(currentWeekStart);
+            friday.setDate(friday.getDate() + 4);
+            
+            const weekNumber = getWeekNumber(currentWeekStart);
+            
+            weekInfo.innerHTML = `
+                <span>Semaine du ${dates[0].getDate()}/${dates[0].getMonth() + 1}/${dates[0].getFullYear()} au ${friday.getDate()}/${friday.getMonth() + 1}/${friday.getFullYear()}</span>
+                <span class="week-number">Semaine N°${weekNumber}</span>
+            `;
+            
+            document.getElementById('weekNumber').value = weekNumber;
+
+            const weekKey = getWeekKey(currentWeekStart);
+            if (!planningData[weekKey]) {
+                planningData[weekKey] = {};
+            }
+
+            displayedPersonnel.forEach((person, index) => {
+                const row = document.createElement('tr');
+                
+                const personnelSelect = document.createElement('select');
+                personnelSelect.className = 'day-select personnel-cell personnel-' + person.team;
+                if (person.stagiaire) {
+                    personnelSelect.className += ' stagiaire';
+                }
+                personnelSelect.onchange = (e) => {
+                    const newPerson = findPersonnelById(e.target.value);
+                    if (newPerson) {
+                        displayedPersonnel[index] = newPerson;
+                        isLocalChange = true;
+                        saveToStorage();
+                        generatePlanning();
+                    }
+                };
+
+                const emptyOption = document.createElement('option');
+                emptyOption.value = '';
+                emptyOption.textContent = '-- Sélectionner --';
+                personnelSelect.appendChild(emptyOption);
+
+                ['atelier', 'chargeaffaire', 'bureau'].forEach(team => {
+                    allPersonnel[team].forEach(p => {
+                        const option = document.createElement('option');
+                        option.value = p.id;
+                        option.textContent = p.name;
+                        if (p.id === person.id) {
+                            option.selected = true;
+                        }
+                        personnelSelect.appendChild(option);
+                    });
+                });
+
+                const personnelCell = document.createElement('td');
+                personnelCell.className = 'personnel-cell personnel-' + person.team;
+                if (person.stagiaire) {
+                    personnelCell.className += ' stagiaire';
+                }
+                personnelCell.appendChild(personnelSelect);
+                row.appendChild(personnelCell);
+
+                dates.forEach((date, dayIndex) => {
+                    const dateKey = formatDate(date);
+                    const cellKey = `${person.id}_${dateKey}`;
+                    
+                    const cell = document.createElement('td');
+                    const holiday = isHoliday(date);
+
+                    const vacation = vacationPeriods.find(vac => {
+                        if (vac.personnelId !== person.id) return false;
+                        const vacStart = new Date(vac.startDate);
+                        const vacEnd = new Date(vac.endDate);
+                        vacEnd.setHours(23, 59, 59, 999);
+                        return date >= vacStart && date <= vacEnd;
+                    });
+
+                    if (holiday) {
+                        cell.className = 'holiday';
+                        cell.textContent = holiday.name;
+                    } else if (vacation) {
+                        cell.className = vacation.arretTravail ? 'arret-travail' : 'vacation';
+                        cell.textContent = vacation.arretTravail ? 'Arrêt travail' : 'Congé';
+                    } else {
+                        const workData = planningData[weekKey][cellKey];
+                        
+                        if (workData && workData.client) {
+                            cell.className = 'work-cell';
+                            const info = document.createElement('div');
+                            info.className = 'work-info';
+                            info.innerHTML = `<strong>${workData.client}</strong>${workData.site}`;
+                            cell.appendChild(info);
+                        } else {
+                            cell.className = 'work-cell';
+                            cell.textContent = '';
+                        }
+
+                        cell.onclick = () => openWorkModal(person, date, dateKey);
+                    }
+
+                    row.appendChild(cell);
+                });
+
+                body.appendChild(row);
+            });
+        }
+
+        function openWorkModal(person, date, dateKey) {
+            currentWorkCell = { person, date, dateKey };
+            const modal = document.getElementById('workModal');
+            const weekKey = getWeekKey(currentWeekStart);
+            const cellKey = `${person.id}_${dateKey}`;
+            const workData = planningData[weekKey][cellKey];
+
+            document.getElementById('clientName').value = workData?.client || '';
+            document.getElementById('siteName').value = workData?.site || '';
+
+            ['applyMonday', 'applyTuesday', 'applyWednesday', 'applyThursday', 'applyFriday'].forEach(id => {
+                document.getElementById(id).checked = false;
+            });
+
+            const dayOfWeek = date.getDay();
+            const dayIds = ['', 'applyMonday', 'applyTuesday', 'applyWednesday', 'applyThursday', 'applyFriday'];
+            if (dayIds[dayOfWeek]) {
+                document.getElementById(dayIds[dayOfWeek]).checked = true;
+            }
+
+            const deleteOptions = document.getElementById('deleteOptions');
+            if (workData?.client) {
+                deleteOptions.style.display = 'block';
+            } else {
+                deleteOptions.style.display = 'none';
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function closeWorkModal() {
+            document.getElementById('workModal').style.display = 'none';
+            currentWorkCell = null;
+        }
+
+        function saveWorkInfo() {
+            if (!currentWorkCell) return;
+
+            const client = document.getElementById('clientName').value.trim();
+            const site = document.getElementById('siteName').value.trim();
+
+            if (!client && !site) {
+                alert('Veuillez renseigner au moins le nom du client ou le site');
+                return;
+            }
+
+            const weekKey = getWeekKey(currentWeekStart);
+            if (!planningData[weekKey]) {
+                planningData[weekKey] = {};
+            }
+
+            const dayCheckboxes = [
+                { id: 'applyMonday', dayOffset: 0 },
+                { id: 'applyTuesday', dayOffset: 1 },
+                { id: 'applyWednesday', dayOffset: 2 },
+                { id: 'applyThursday', dayOffset: 3 },
+                { id: 'applyFriday', dayOffset: 4 }
+            ];
+
+            dayCheckboxes.forEach(({ id, dayOffset }) => {
+                if (document.getElementById(id).checked) {
+                    const date = new Date(currentWeekStart);
+                    date.setDate(date.getDate() + dayOffset);
+                    const dateKey = formatDate(date);
+                    const cellKey = `${currentWorkCell.person.id}_${dateKey}`;
+                    
+                    planningData[weekKey][cellKey] = {
+                        client: client,
+                        site: site
+                    };
+                }
+            });
+
+            isLocalChange = true;
+            saveToStorage();
+            generatePlanning();
+            closeWorkModal();
+        }
+
+        function deleteCurrentDay() {
+            if (!currentWorkCell) return;
+
+            const weekKey = getWeekKey(currentWeekStart);
+            const cellKey = `${currentWorkCell.person.id}_${currentWorkCell.dateKey}`;
+            
+            delete planningData[weekKey][cellKey];
+            
+            isLocalChange = true;
+            saveToStorage();
+            generatePlanning();
+            closeWorkModal();
+        }
+
+        function deleteAllSelectedDays() {
+            if (!currentWorkCell) return;
+
+            const weekKey = getWeekKey(currentWeekStart);
+            const dayCheckboxes = [
+                { id: 'applyMonday', dayOffset: 0 },
+                { id: 'applyTuesday', dayOffset: 1 },
+                { id: 'applyWednesday', dayOffset: 2 },
+                { id: 'applyThursday', dayOffset: 3 },
+                { id: 'applyFriday', dayOffset: 4 }
+            ];
+
+            dayCheckboxes.forEach(({ id, dayOffset }) => {
+                if (document.getElementById(id).checked) {
+                    const date = new Date(currentWeekStart);
+                    date.setDate(date.getDate() + dayOffset);
+                    const dateKey = formatDate(date);
+                    const cellKey = `${currentWorkCell.person.id}_${dateKey}`;
+                    
+                    delete planningData[weekKey][cellKey];
+                }
+            });
+
+            isLocalChange = true;
+            saveToStorage();
+            generatePlanning();
+            closeWorkModal();
+        }
+
+        function findPersonnelById(id) {
+            for (let team in allPersonnel) {
+                const person = allPersonnel[team].find(p => p.id === id);
+                if (person) return person;
+            }
+            return null;
+        }
+
+        function openTeamModal(team) {
+            currentTeam = team;
+            const modal = document.getElementById('teamModal');
+            const title = document.getElementById('modalTitle');
+
+            const titles = {
+                atelier: 'Personnel Atelier',
+                chargeaffaire: 'Personnel Chargé d\'affaire',
+                bureau: 'Personnel Bureau'
+            };
+
+            title.textContent = titles[team];
+            modal.style.display = 'block';
+            updatePersonnelList();
+        }
+
+        function closeModal() {
+            document.getElementById('teamModal').style.display = 'none';
+            document.getElementById('personnelName').value = '';
+            document.getElementById('stagiaire').checked = false;
+        }
+
+        function addPersonnel() {
+            const name = document.getElementById('personnelName').value.trim();
+            if (!name) {
+                alert('Veuillez entrer un nom');
+                return;
+            }
+
+            const person = {
+                id: Date.now() + '_' + Math.random(),
+                name: name,
+                team: currentTeam,
+                stagiaire: document.getElementById('stagiaire').checked
+            };
+
+            allPersonnel[currentTeam].push(person);
+            
+            document.getElementById('personnelName').value = '';
+            document.getElementById('stagiaire').checked = false;
+            isLocalChange = true;
+            saveToStorage();
+            updatePersonnelList();
+        }
+
+        function updatePersonnelList() {
+            const list = document.getElementById('personnelList');
+            list.innerHTML = '<h3>Personnel actuel</h3>';
+
+            allPersonnel[currentTeam].forEach((person, index) => {
+                const div = document.createElement('div');
+                div.className = 'personnel-item';
+                
+                let info = `<h4>${person.name}${person.stagiaire ? ' (Stagiaire/Alternant)' : ''}</h4>`;
+                info += `<button class="btn btn-warning" onclick="removePersonnel(${index})">Supprimer</button>`;
+                
+                div.innerHTML = info;
+                list.appendChild(div);
+            });
+        }
+
+        function removePersonnel(index) {
+            const person = allPersonnel[currentTeam][index];
+            allPersonnel[currentTeam].splice(index, 1);
+            
+            displayedPersonnel = displayedPersonnel.filter(p => p.id !== person.id);
+            
+            isLocalChange = true;
+            saveToStorage();
+            updatePersonnelList();
+            generatePlanning();
+        }
+
+        function addPersonnelRow() {
+            const allPeople = [];
+            ['atelier', 'chargeaffaire', 'bureau'].forEach(team => {
+                allPersonnel[team].forEach(p => {
+                    if (!displayedPersonnel.find(dp => dp.id === p.id)) {
+                        allPeople.push(p);
+                    }
+                });
+            });
+
+            if (allPeople.length === 0) {
+                alert('Aucun personnel disponible. Veuillez d\'abord créer du personnel dans les équipes.');
+                return;
+            }
+
+            displayedPersonnel.push(allPeople[0]);
+            isLocalChange = true;
+            saveToStorage();
+            generatePlanning();
+        }
+
+        function previousWeek() {
+            const newDate = new Date(currentWeekStart);
+            newDate.setDate(newDate.getDate() - 7);
+            currentWeekStart = newDate;
+            const newYear = newDate.getFullYear();
+            if (newYear !== currentYear) {
+                currentYear = newYear;
+                document.getElementById('yearSelect').value = currentYear;
+            }
+            generatePlanning();
+        }
+
+        function nextWeek() {
+            const newDate = new Date(currentWeekStart);
+            newDate.setDate(newDate.getDate() + 7);
+            currentWeekStart = newDate;
+            const newYear = newDate.getFullYear();
+            if (newYear !== currentYear) {
+                currentYear = newYear;
+                document.getElementById('yearSelect').value = currentYear;
+            }
+            generatePlanning();
+        }
+
+        function printPlanning() {
+            window.print();
+        }
+
+        function openVacationModal() {
+            const modal = document.getElementById('vacationModal');
+            const select = document.getElementById('vacationPersonnelSelect');
+            
+            select.innerHTML = '<option value="">-- Choisir un personnel --</option>';
+            
+            ['atelier', 'chargeaffaire', 'bureau'].forEach(team => {
+                allPersonnel[team].forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.textContent = `${p.name} (${team})`;
+                    select.appendChild(option);
+                });
+            });
+            
+            modal.style.display = 'block';
+            updateVacationList();
+        }
+
+        function closeVacationModal() {
+            document.getElementById('vacationModal').style.display = 'none';
+            document.getElementById('vacationPersonnelSelect').value = '';
+            document.getElementById('vacationStartDate').value = '';
+            document.getElementById('vacationEndDate').value = '';
+            document.getElementById('arretTravail').checked = false;
+        }
+
+        function addVacationPeriod() {
+            const personnelId = document.getElementById('vacationPersonnelSelect').value;
+            const startDate = document.getElementById('vacationStartDate').value;
+            const endDate = document.getElementById('vacationEndDate').value;
+            const arretTravail = document.getElementById('arretTravail').checked;
+
+            if (!personnelId) {
+                alert('Veuillez sélectionner un membre du personnel');
+                return;
+            }
+
+            if (!startDate || !endDate) {
+                alert('Veuillez saisir les dates de début et de fin');
+                return;
+            }
+
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('La date de début doit être antérieure à la date de fin');
+                return;
+            }
+
+            const person = findPersonnelById(personnelId);
+            
+            vacationPeriods.push({
+                id: Date.now() + '_' + Math.random(),
+                personnelId: personnelId,
+                personnelName: person.name,
+                startDate: startDate,
+                endDate: endDate,
+                arretTravail: arretTravail
+            });
+
+            document.getElementById('vacationPersonnelSelect').value = '';
+            document.getElementById('vacationStartDate').value = '';
+            document.getElementById('vacationEndDate').value = '';
+            document.getElementById('arretTravail').checked = false;
+            
+            isLocalChange = true;
+            saveToStorage();
+            updateVacationList();
+            generatePlanning();
+        }
+
+        function updateVacationList() {
+            const list = document.getElementById('vacationList');
+            list.innerHTML = '<h3>Périodes de congés enregistrées</h3>';
+
+            if (vacationPeriods.length === 0) {
+                list.innerHTML += '<p>Aucune période de congés enregistrée</p>';
+                return;
+            }
+
+            vacationPeriods.forEach((vacation, index) => {
+                const div = document.createElement('div');
+                div.className = 'personnel-item';
+                
+                const startFormatted = new Date(vacation.startDate).toLocaleDateString('fr-FR');
+                const endFormatted = new Date(vacation.endDate).toLocaleDateString('fr-FR');
+                
+                let info = `<h4>${vacation.personnelName}${vacation.arretTravail ? ' (Arrêt de travail)' : ''}</h4>`;
+                info += `<p>Du ${startFormatted} au ${endFormatted}</p>`;
+                info += `<button class="btn btn-warning" onclick="removeVacation(${index})">Supprimer</button>`;
+                
+                div.innerHTML = info;
+                list.appendChild(div);
+            });
+        }
+
+        function removeVacation(index) {
+            vacationPeriods.splice(index, 1);
+            isLocalChange = true;
+            saveToStorage();
+            updateVacationList();
+            generatePlanning();
+        }
+
+        window.onclick = function(event) {
+            const teamModal = document.getElementById('teamModal');
+            const vacationModal = document.getElementById('vacationModal');
+            const workModal = document.getElementById('workModal');
+            
+            if (event.target === teamModal) {
+                closeModal();
+            }
+            if (event.target === vacationModal) {
+                closeVacationModal();
+            }
+            if (event.target === workModal) {
+                closeWorkModal();
+            }
+        }
+
+        // Gestion de la molette de souris pour navigation
+        let wheelTimeout = null;
+        document.addEventListener('wheel', function(event) {
+            // Ignorer si on est dans un modal ou un champ de saisie
+            if (event.target.closest('.modal') || 
+                event.target.tagName === 'INPUT' || 
+                event.target.tagName === 'SELECT' || 
+                event.target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            // Debounce pour éviter une navigation trop rapide
+            if (wheelTimeout) return;
+            
+            wheelTimeout = setTimeout(() => {
+                wheelTimeout = null;
+            }, 300);
+
+            // Navigation selon la direction de la molette
+            if (event.deltaY > 0) {
+                // Molette vers le bas = semaine suivante
+                nextWeek();
+            } else if (event.deltaY < 0) {
+                // Molette vers le haut = semaine précédente
+                previousWeek();
+            }
+
+            event.preventDefault();
+        }, { passive: false });
+
+        loadFromStorage().then(() => {
+            initYearSelector();
+            generatePlanning();
+            startSync();
+        });
+    </script>
+</body>
+</html>
