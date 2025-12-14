@@ -751,40 +751,46 @@
 
         function setupFirebaseListeners() {
             db.ref('personnel').on('value', snap => {
-                if (snap.exists()) {
-                    allPersonnel = snap.val();
-                    if (currentTeam && document.getElementById('teamModal').style.display === 'block') {
-                        updatePersonnelList();
-                    }
-                    if (document.getElementById('vacationModal').style.display === 'block') {
-                        updateVacationPersonnelSelect();
-                    }
-                    generatePlanning();
+                const newData = snap.exists() ? snap.val() : { atelier: [], chargeaffaire: [], bureau: [] };
+                
+                // S'assurer que tous les tableaux existent
+                if (!newData.atelier) newData.atelier = [];
+                if (!newData.chargeaffaire) newData.chargeaffaire = [];
+                if (!newData.bureau) newData.bureau = [];
+                
+                allPersonnel = newData;
+                
+                if (currentTeam && document.getElementById('teamModal').style.display === 'block') {
+                    updatePersonnelList();
                 }
+                if (document.getElementById('vacationModal').style.display === 'block') {
+                    updateVacationPersonnelSelect();
+                }
+                generatePlanning();
             });
 
             db.ref('planning').on('value', snap => {
-                if (snap.exists()) {
-                    planningData = snap.val();
-                    generatePlanning();
-                }
+                planningData = snap.exists() ? snap.val() : {};
+                generatePlanning();
             });
 
             db.ref('displayed').on('value', snap => {
-                if (snap.exists()) {
-                    displayedPersonnel = snap.val();
-                    generatePlanning();
+                displayedPersonnel = snap.exists() ? snap.val() : [];
+                if (!Array.isArray(displayedPersonnel)) {
+                    displayedPersonnel = [];
                 }
+                generatePlanning();
             });
 
             db.ref('vacations').on('value', snap => {
-                if (snap.exists()) {
-                    vacationPeriods = snap.val();
-                    if (document.getElementById('vacationModal').style.display === 'block') {
-                        updateVacationList();
-                    }
-                    generatePlanning();
+                vacationPeriods = snap.exists() ? snap.val() : [];
+                if (!Array.isArray(vacationPeriods)) {
+                    vacationPeriods = [];
                 }
+                if (document.getElementById('vacationModal').style.display === 'block') {
+                    updateVacationList();
+                }
+                generatePlanning();
             });
         }
 
@@ -1076,7 +1082,11 @@
         }
 
         function addPersonnel() {
-            if (!db) return;
+            if (!db) {
+                alert('Connexion Firebase non établie');
+                return;
+            }
+            
             const name = document.getElementById('personnelName').value.trim();
             if (!name) {
                 alert('Veuillez entrer un nom');
@@ -1090,11 +1100,20 @@
                 stagiaire: document.getElementById('stagiaire').checked
             };
 
+            if (!Array.isArray(allPersonnel[currentTeam])) {
+                allPersonnel[currentTeam] = [];
+            }
+
             allPersonnel[currentTeam].push(person);
-            db.ref('personnel').set(allPersonnel);
             
-            document.getElementById('personnelName').value = '';
-            document.getElementById('stagiaire').checked = false;
+            db.ref('personnel').set(allPersonnel).then(() => {
+                console.log('Personnel ajouté avec succès:', person);
+                document.getElementById('personnelName').value = '';
+                document.getElementById('stagiaire').checked = false;
+            }).catch(err => {
+                console.error('Erreur lors de l\'ajout:', err);
+                alert('Erreur lors de l\'ajout du personnel');
+            });
         }
 
         function updatePersonnelList() {
@@ -1106,12 +1125,35 @@
                 return;
             }
 
-            allPersonnel[currentTeam].forEach((person, index) => {
+            allPersonnel[currentTeam].forEach((person) => {
                 const div = document.createElement('div');
                 div.className = 'personnel-item';
-                div.innerHTML = `<h4>${person.name}${person.stagiaire ? ' (Stagiaire/Alternant)' : ''}</h4><button class="btn btn-warning" onclick="removePersonnel(${index})">Supprimer</button>`;
+                
+                const h4 = document.createElement('h4');
+                h4.textContent = person.name + (person.stagiaire ? ' (Stagiaire/Alternant)' : '');
+                
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-warning';
+                btn.textContent = 'Supprimer';
+                btn.onclick = () => removePersonnelById(person.id);
+                
+                div.appendChild(h4);
+                div.appendChild(btn);
                 list.appendChild(div);
             });
+        }
+
+        function removePersonnelById(personId) {
+            if (!db) return;
+            const person = findPersonnelById(personId);
+            if (!person) return;
+            
+            const team = person.team;
+            allPersonnel[team] = allPersonnel[team].filter(p => p.id !== personId);
+            displayedPersonnel = displayedPersonnel.filter(p => p.id !== personId);
+            
+            db.ref('personnel').set(allPersonnel);
+            db.ref('displayed').set(displayedPersonnel);
         }
 
         function removePersonnel(index) {
@@ -1125,21 +1167,36 @@
         }
 
         function addPersonnelRow() {
-            if (!db) return;
+            if (!db) {
+                alert('Connexion Firebase non établie');
+                return;
+            }
+            
             const allPeople = [];
             ['atelier', 'chargeaffaire', 'bureau'].forEach(team => {
-                allPersonnel[team].forEach(p => {
-                    if (!displayedPersonnel.find(dp => dp.id === p.id)) allPeople.push(p);
-                });
+                if (allPersonnel[team]) {
+                    allPersonnel[team].forEach(p => {
+                        if (!displayedPersonnel.find(dp => dp.id === p.id)) allPeople.push(p);
+                    });
+                }
             });
 
             if (allPeople.length === 0) {
-                alert('Aucun personnel disponible. Veuillez d\'abord créer du personnel dans les équipes.');
+                alert('Aucun personnel disponible. Veuillez d\'abord créer du personnel dans les équipes (Personnel Atelier, Chargé d\'affaire ou Bureau).');
                 return;
             }
 
+            if (!Array.isArray(displayedPersonnel)) {
+                displayedPersonnel = [];
+            }
+
             displayedPersonnel.push(allPeople[0]);
-            db.ref('displayed').set(displayedPersonnel);
+            db.ref('displayed').set(displayedPersonnel).then(() => {
+                console.log('Personnel ajouté avec succès');
+            }).catch(err => {
+                console.error('Erreur lors de l\'ajout:', err);
+                alert('Erreur lors de l\'ajout du personnel');
+            });
         }
 
         function previousWeek() {
@@ -1237,24 +1294,38 @@
             const list = document.getElementById('vacationList');
             list.innerHTML = '<h3>Périodes de congés enregistrées</h3>';
 
-            if (vacationPeriods.length === 0) {
+            if (!vacationPeriods || vacationPeriods.length === 0) {
                 list.innerHTML += '<p>Aucune période de congés enregistrée</p>';
                 return;
             }
 
-            vacationPeriods.forEach((vacation, index) => {
+            vacationPeriods.forEach((vacation) => {
                 const div = document.createElement('div');
                 div.className = 'personnel-item';
+                
+                const h4 = document.createElement('h4');
+                h4.textContent = vacation.personnelName + (vacation.arretTravail ? ' (Arrêt de travail)' : '');
+                
+                const p = document.createElement('p');
                 const startFormatted = new Date(vacation.startDate).toLocaleDateString('fr-FR');
                 const endFormatted = new Date(vacation.endDate).toLocaleDateString('fr-FR');
-                div.innerHTML = `<h4>${vacation.personnelName}${vacation.arretTravail ? ' (Arrêt de travail)' : ''}</h4><p>Du ${startFormatted} au ${endFormatted}</p><button class="btn btn-warning" onclick="removeVacation(${index})">Supprimer</button>`;
+                p.textContent = `Du ${startFormatted} au ${endFormatted}`;
+                
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-warning';
+                btn.textContent = 'Supprimer';
+                btn.onclick = () => removeVacationById(vacation.id);
+                
+                div.appendChild(h4);
+                div.appendChild(p);
+                div.appendChild(btn);
                 list.appendChild(div);
             });
         }
 
-        function removeVacation(index) {
+        function removeVacationById(vacationId) {
             if (!db) return;
-            vacationPeriods.splice(index, 1);
+            vacationPeriods = vacationPeriods.filter(v => v.id !== vacationId);
             db.ref('vacations').set(vacationPeriods);
         }
 
