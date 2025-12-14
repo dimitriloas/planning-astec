@@ -5,543 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PLANNING HEBDOMADAIRE ASTEC-SUD-OUEST - Collaboratif</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .setup-banner {
-            background: #FFF3E0;
-            border: 2px solid #FF9800;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .setup-banner h3 {
-            color: #E65100;
-            margin-bottom: 10px;
-        }
-
-        .setup-banner input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .setup-banner button {
-            background: #4CAF50;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .setup-banner button:hover {
-            background: #45a049;
-        }
-
-        .setup-banner.configured {
-            background: #E8F5E9;
-            border-color: #4CAF50;
-        }
-
-        .setup-banner.configured h3 {
-            color: #2E7D32;
-        }
-
-        .sync-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-weight: bold;
-            z-index: 2000;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        .sync-status.online {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .sync-status.offline {
-            background: #f44336;
-            color: white;
-        }
-
-        .sync-status.connecting {
-            background: #FF9800;
-            color: white;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .year-selector {
-            padding: 8px 12px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .team-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #9C27B0;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #7B1FA2;
-        }
-
-        .btn-atelier {
-            background: #2196F3;
-            color: white;
-        }
-
-        .btn-atelier:hover {
-            background: #1976D2;
-        }
-
-        .btn-success {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #45a049;
-        }
-
-        .btn-warning {
-            background: #FF9800;
-            color: white;
-        }
-
-        .btn-warning:hover {
-            background: #F57C00;
-        }
-
-        .btn-print {
-            background: #9C27B0;
-            color: white;
-        }
-
-        .btn-print:hover {
-            background: #7B1FA2;
-        }
-
-        .btn-vacation {
-            background: #A1887F;
-            color: white;
-        }
-
-        .btn-vacation:hover {
-            background: #8D6E63;
-        }
-
-        .btn-danger {
-            background: #f44336;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #d32f2f;
-        }
-
-        .legend {
-            display: flex;
-            gap: 20px;
-            margin: 20px 0;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 4px;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .legend-color {
-            width: 30px;
-            height: 20px;
-            border-radius: 3px;
-            border: 1px solid #ddd;
-        }
-
-        .legend-arret {
-            background: repeating-linear-gradient(45deg, #fff9c4, #fff9c4 5px, #f4e896 5px, #f4e896 10px);
-        }
-
-        .legend-atelier {
-            background: #2196F3;
-        }
-
-        .legend-atelier-stagiaire {
-            background: repeating-linear-gradient(45deg, #2196F3, #2196F3 5px, #1976D2 5px, #1976D2 10px);
-        }
-
-        .legend-charge {
-            background: #4CAF50;
-        }
-
-        .legend-charge-stagiaire {
-            background: repeating-linear-gradient(45deg, #4CAF50, #4CAF50 5px, #388E3C 5px, #388E3C 10px);
-        }
-
-        .legend-bureau {
-            background: #FF9800;
-        }
-
-        .legend-bureau-stagiaire {
-            background: repeating-linear-gradient(45deg, #FF9800, #FF9800 5px, #F57C00 5px, #F57C00 10px);
-        }
-
-        .planning-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        .planning-table th,
-        .planning-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        .planning-table th {
-            background: #9C27B0;
-            color: white;
-            font-weight: bold;
-        }
-
-        .planning-table td.personnel-cell {
-            background: white;
-            font-weight: bold;
-        }
-
-        .personnel-atelier {
-            background: #2196F3 !important;
-            color: white;
-        }
-
-        .personnel-atelier.stagiaire {
-            background: repeating-linear-gradient(45deg, #2196F3, #2196F3 5px, #1976D2 5px, #1976D2 10px) !important;
-        }
-
-        .personnel-chargeaffaire {
-            background: #4CAF50 !important;
-            color: white;
-        }
-
-        .personnel-chargeaffaire.stagiaire {
-            background: repeating-linear-gradient(45deg, #4CAF50, #4CAF50 5px, #388E3C 5px, #388E3C 10px) !important;
-        }
-
-        .personnel-bureau {
-            background: #FF9800 !important;
-            color: white;
-        }
-
-        .personnel-bureau.stagiaire {
-            background: repeating-linear-gradient(45deg, #FF9800, #FF9800 5px, #F57C00 5px, #F57C00 10px) !important;
-        }
-
-        .holiday {
-            background: #ffebee;
-            font-weight: bold;
-        }
-
-        .vacation {
-            background: #fff9c4;
-            font-style: italic;
-        }
-
-        .arret-travail {
-            background: repeating-linear-gradient(45deg, #fff9c4, #fff9c4 5px, #f4e896 5px, #f4e896 10px);
-            font-style: italic;
-        }
-
-        .work-cell {
-            background: #e3f2fd;
-            cursor: pointer;
-            min-height: 60px;
-            vertical-align: top;
-            padding: 5px;
-            font-size: 11px;
-        }
-
-        .work-cell:hover {
-            background: #bbdefb;
-        }
-
-        .work-info {
-            text-align: left;
-            word-wrap: break-word;
-        }
-
-        .work-info strong {
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        .day-select {
-            width: 100%;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background: white;
-            margin: 50px auto;
-            padding: 30px;
-            width: 90%;
-            max-width: 600px;
-            border-radius: 8px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .close {
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .close:hover {
-            color: #333;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .personnel-list {
-            margin-top: 20px;
-        }
-
-        .personnel-item {
-            background: #f9f9f9;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-
-        .personnel-item h4 {
-            margin-bottom: 10px;
-            color: #2196F3;
-        }
-
-        .personnel-item button {
-            margin-top: 10px;
-        }
-
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin: 10px 0;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .week-navigation {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin: 20px 0;
-        }
-
-        .week-info {
-            font-weight: bold;
-            font-size: 18px;
-            margin: 0 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .week-number {
-            color: #9C27B0;
-            font-size: 14px;
-        }
-
-        .add-personnel-btn {
-            margin-top: 10px;
-            width: 100%;
-        }
-
-        .delete-options {
-            margin-top: 15px;
-            padding: 15px;
-            background: #fff3e0;
-            border-radius: 4px;
-            border: 1px solid #ff9800;
-        }
-
-        .delete-options h4 {
-            margin-bottom: 10px;
-            color: #f57c00;
-        }
-
-        @media print {
-            .setup-banner, .sync-status, .team-buttons, .week-navigation, .btn-print, .no-print {
-                display: none !important;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .setup-banner { background: #FFF3E0; border: 2px solid #FF9800; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .setup-banner h3 { color: #E65100; margin-bottom: 10px; }
+        .setup-banner input, .setup-banner button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .setup-banner button { background: #4CAF50; color: white; padding: 12px 30px; border: none; cursor: pointer; font-size: 16px; }
+        .setup-banner button:hover { background: #45a049; }
+        .setup-banner.configured { background: #E8F5E9; border-color: #4CAF50; }
+        .setup-banner.configured h3 { color: #2E7D32; }
+        .sync-status { position: fixed; top: 20px; right: 20px; padding: 10px 20px; border-radius: 4px; font-weight: bold; z-index: 2000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .sync-status.online { background: #4CAF50; color: white; }
+        .sync-status.offline { background: #f44336; color: white; }
+        .sync-status.connecting { background: #FF9800; color: white; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .year-selector { padding: 8px 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 4px; }
+        .logo-container { display: flex; align-items: center; gap: 20px; }
+        .team-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+        .btn-primary { background: #9C27B0; color: white; }
+        .btn-primary:hover { background: #7B1FA2; }
+        .btn-atelier { background: #2196F3; color: white; }
+        .btn-atelier:hover { background: #1976D2; }
+        .btn-success { background: #4CAF50; color: white; }
+        .btn-success:hover { background: #45a049; }
+        .btn-warning { background: #FF9800; color: white; }
+        .btn-warning:hover { background: #F57C00; }
+        .btn-print { background: #9C27B0; color: white; }
+        .btn-print:hover { background: #7B1FA2; }
+        .btn-vacation { background: #A1887F; color: white; }
+        .btn-vacation:hover { background: #8D6E63; }
+        .btn-danger { background: #f44336; color: white; }
+        .btn-danger:hover { background: #d32f2f; }
+        .legend { display: flex; gap: 20px; margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 4px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .legend-color { width: 30px; height: 20px; border-radius: 3px; border: 1px solid #ddd; }
+        .legend-arret { background: repeating-linear-gradient(45deg, #fff9c4, #fff9c4 5px, #f4e896 5px, #f4e896 10px); }
+        .legend-atelier { background: #2196F3; }
+        .legend-atelier-stagiaire { background: repeating-linear-gradient(45deg, #2196F3, #2196F3 5px, #1976D2 5px, #1976D2 10px); }
+        .legend-charge { background: #4CAF50; }
+        .legend-charge-stagiaire { background: repeating-linear-gradient(45deg, #4CAF50, #4CAF50 5px, #388E3C 5px, #388E3C 10px); }
+        .legend-bureau { background: #FF9800; }
+        .legend-bureau-stagiaire { background: repeating-linear-gradient(45deg, #FF9800, #FF9800 5px, #F57C00 5px, #F57C00 10px); }
+        .planning-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .planning-table th, .planning-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .planning-table th { background: #9C27B0; color: white; font-weight: bold; }
+        .planning-table td.personnel-cell { background: white; font-weight: bold; }
+        .personnel-atelier { background: #2196F3 !important; color: white; }
+        .personnel-atelier.stagiaire { background: repeating-linear-gradient(45deg, #2196F3, #2196F3 5px, #1976D2 5px, #1976D2 10px) !important; }
+        .personnel-chargeaffaire { background: #4CAF50 !important; color: white; }
+        .personnel-chargeaffaire.stagiaire { background: repeating-linear-gradient(45deg, #4CAF50, #4CAF50 5px, #388E3C 5px, #388E3C 10px) !important; }
+        .personnel-bureau { background: #FF9800 !important; color: white; }
+        .personnel-bureau.stagiaire { background: repeating-linear-gradient(45deg, #FF9800, #FF9800 5px, #F57C00 5px, #F57C00 10px) !important; }
+        .holiday { background: #ffebee; font-weight: bold; }
+        .vacation { background: #fff9c4; font-style: italic; }
+        .arret-travail { background: repeating-linear-gradient(45deg, #fff9c4, #fff9c4 5px, #f4e896 5px, #f4e896 10px); font-style: italic; }
+        .work-cell { background: #e3f2fd; cursor: pointer; min-height: 60px; vertical-align: top; padding: 5px; font-size: 11px; }
+        .work-cell:hover { background: #bbdefb; }
+        .work-info { text-align: left; word-wrap: break-word; }
+        .work-info strong { display: block; margin-bottom: 2px; }
+        .day-select { width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; background: white; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 50px auto; padding: 30px; width: 90%; max-width: 600px; border-radius: 8px; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close { font-size: 28px; font-weight: bold; cursor: pointer; color: #999; }
+        .close:hover { color: #333; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .personnel-list { margin-top: 20px; }
+        .personnel-item { background: #f9f9f9; padding: 15px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ddd; }
+        .personnel-item h4 { margin-bottom: 10px; color: #2196F3; }
+        .personnel-item button { margin-top: 10px; }
+        .checkbox-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 10px 0; }
+        .checkbox-label { display: flex; align-items: center; gap: 5px; }
+        .week-navigation { display: flex; gap: 10px; align-items: center; margin: 20px 0; }
+        .week-info { font-weight: bold; font-size: 18px; margin: 0 20px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .week-number { color: #9C27B0; font-size: 14px; }
+        .add-personnel-btn { margin-top: 10px; width: 100%; }
+        .delete-options { margin-top: 15px; padding: 15px; background: #fff3e0; border-radius: 4px; border: 1px solid #ff9800; }
+        .delete-options h4 { margin-bottom: 10px; color: #f57c00; }
+        @media print { .setup-banner, .sync-status, .team-buttons, .week-navigation, .btn-print, .no-print { display: none !important; } }
     </style>
 </head>
 <body>
     <div class="sync-status connecting" id="syncStatus">Configuration requise</div>
-
     <div class="container">
         <div class="setup-banner" id="setupBanner">
             <h3>⚙️ Configuration Firebase (Une seule fois)</h3>
-            <p style="margin-bottom: 15px;">Pour activer le mode collaboratif, suivez le guide ci-dessous et collez votre configuration Firebase :</p>
-            
-            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Configuration Firebase (format JSON) :</label>
-            <textarea id="firebaseConfig" rows="8" style="width: 100%; padding: 10px; font-family: monospace; font-size: 12px;" placeholder='{
-  "apiKey": "AIzaSyDkp4bjfK_fo0f5WNnMCq3nX3muKXHXee8",
-  "authDomain": "planning-astec.firebaseapp.com",
-  "databaseURL": "https://planning-astec-default-rtdb.europe-west1.firebasedatabase.app",
-  "projectId": "planning-astec",
-  "storageBucket": "planning-astec.firebasestorage.app",
-  "messagingSenderId": "39222376536",
-  "appId": "1:39222376536:web:6e109f60d42be7c355f22d"
-}'></textarea>
-            
-            <button onclick="saveFirebaseConfig()" class="btn btn-success" style="margin-top: 10px;">💾 Enregistrer et activer</button>
-            
-            <details style="margin-top: 20px; cursor: pointer;">
-                <summary style="font-weight: bold; color: #1976D2;">📖 Comment obtenir ma configuration Firebase ? (Cliquez pour voir le guide)</summary>
-                <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 4px;">
-                    <ol style="line-height: 2;">
-                        <li><strong>Allez sur:</strong> <a href="https://console.firebase.google.com" target="_blank">https://console.firebase.google.com</a></li>
-                        <li>Cliquez sur <strong>"Ajouter un projet"</strong></li>
-                        <li>Nommez-le: <code>planning-astec</code></li>
-                        <li>Désactivez Google Analytics (pas nécessaire)</li>
-                        <li>Créez le projet</li>
-                        <li>Dans le projet, cliquez sur l'icône <strong>"Web" (&lt;/&gt;)</strong></li>
-                        <li>Nommez l'app: <code>Planning ASTEC</code></li>
-                        <li><strong>Copiez</strong> l'objet <code>firebaseConfig</code> qui apparaît</li>
-                        <li>Retour à Firebase Console → <strong>Realtime Database</strong> → <strong>Créer une base de données</strong></li>
-                        <li>Choisissez <strong>"Commencer en mode test"</strong> (pour 30 jours)</li>
-                        <li>Collez la configuration ci-dessus et cliquez sur "Enregistrer"</li>
-                    </ol>
-                </div>
-            </details>
+            <p style="margin-bottom: 15px;">Pour activer le mode collaboratif, collez votre configuration Firebase :</p>
+            <textarea id="firebaseConfig" rows="8" style="width: 100%; padding: 10px; font-family: monospace; font-size: 12px;"></textarea>
+            <button onclick="saveFirebaseConfig()">💾 Enregistrer et activer</button>
         </div>
-
         <div class="header">
             <h1>Planning Hebdomadaire Astec-sud-ouest</h1>
             <div class="logo-container">
                 <div style="display: flex; gap: 15px; align-items: center;">
-                    <div>
-                        <label for="yearSelect">Année : </label>
-                        <select id="yearSelect" class="year-selector"></select>
-                    </div>
-                    <div>
-                        <label for="weekNumber">Semaine N° : </label>
-                        <input type="number" id="weekNumber" class="year-selector" style="width: 80px;" min="1" max="53" placeholder="1-53" onkeypress="if(event.key==='Enter') goToWeek()">
-                        <button class="btn btn-primary" onclick="goToWeek()" style="margin-left: 5px; padding: 8px 15px;">Aller</button>
-                    </div>
+                    <div><label for="yearSelect">Année : </label><select id="yearSelect" class="year-selector"></select></div>
+                    <div><label for="weekNumber">Semaine N° : </label><input type="number" id="weekNumber" class="year-selector" style="width: 80px;" min="1" max="53" onkeypress="if(event.key==='Enter') goToWeek()"><button class="btn btn-primary" onclick="goToWeek()" style="margin-left: 5px; padding: 8px 15px;">Aller</button></div>
                 </div>
             </div>
         </div>
-
         <div class="team-buttons no-print">
             <button class="btn btn-atelier" onclick="openTeamModal('atelier')">Personnel Atelier</button>
             <button class="btn btn-success" onclick="openTeamModal('chargeaffaire')">Personnel Chargé d'affaire</button>
@@ -549,50 +114,31 @@
             <button class="btn btn-vacation" onclick="openVacationModal()">Congés Personnel</button>
             <button class="btn btn-print" onclick="printPlanning()">Imprimer</button>
         </div>
-
         <div class="week-navigation no-print">
             <button class="btn btn-primary" onclick="previousWeek()">← Semaine précédente</button>
             <span class="week-info" id="weekInfo"></span>
             <button class="btn btn-primary" onclick="nextWeek()">Semaine suivante →</button>
         </div>
-
         <div class="legend">
             <div class="legend-item"><div class="legend-color legend-atelier"></div><span>Personnel Atelier</span></div>
-            <div class="legend-item"><div class="legend-color legend-atelier-stagiaire"></div><span>Atelier Stagiaire/Alternant</span></div>
             <div class="legend-item"><div class="legend-color legend-charge"></div><span>Chargé d'affaire</span></div>
-            <div class="legend-item"><div class="legend-color legend-charge-stagiaire"></div><span>Chargé d'affaire Stagiaire/Alternant</span></div>
             <div class="legend-item"><div class="legend-color legend-bureau"></div><span>Personnel Bureau</span></div>
-            <div class="legend-item"><div class="legend-color legend-bureau-stagiaire"></div><span>Bureau Stagiaire/Alternant</span></div>
             <div class="legend-item"><div class="legend-color vacation"></div><span>Congés</span></div>
             <div class="legend-item"><div class="legend-color legend-arret"></div><span>Arrêt de travail</span></div>
             <div class="legend-item"><div class="legend-color holiday"></div><span>Jour férié</span></div>
         </div>
-
         <table class="planning-table" id="planningTable">
             <thead><tr id="tableHeader"></tr></thead>
             <tbody id="tableBody"></tbody>
         </table>
-
         <button class="btn btn-success add-personnel-btn no-print" onclick="addPersonnelRow()">+ Ajouter une ligne de personnel</button>
     </div>
 
-    <!-- Modals -->
     <div id="teamModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle"></h2>
-                <span class="close" onclick="closeModal()">&times;</span>
-            </div>
-            <div class="form-group">
-                <label>Nom du personnel</label>
-                <input type="text" id="personnelName" placeholder="Nom et prénom">
-            </div>
-            <div class="form-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="stagiaire" style="width: auto; margin-right: 5px;">
-                    Stagiaire/Alternant
-                </label>
-            </div>
+            <div class="modal-header"><h2 id="modalTitle"></h2><span class="close" onclick="closeModal()">&times;</span></div>
+            <div class="form-group"><label>Nom du personnel</label><input type="text" id="personnelName" placeholder="Nom et prénom"></div>
+            <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="stagiaire" style="width: auto;">Stagiaire/Alternant</label></div>
             <button class="btn btn-success" onclick="addPersonnel()">Ajouter</button>
             <div class="personnel-list" id="personnelList"></div>
         </div>
@@ -600,51 +146,22 @@
 
     <div id="vacationModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Gestion des Congés</h2>
-                <span class="close" onclick="closeVacationModal()">&times;</span>
-            </div>
-            <div class="form-group">
-                <label>Sélectionner un membre du personnel</label>
-                <select id="vacationPersonnelSelect" class="day-select">
-                    <option value="">-- Choisir un personnel --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Date de début des congés</label>
-                <input type="date" id="vacationStartDate">
-            </div>
-            <div class="form-group">
-                <label>Date de fin des congés (incluse)</label>
-                <input type="date" id="vacationEndDate">
-            </div>
-            <div class="form-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="arretTravail">
-                    <span>Arrêt de travail</span>
-                </label>
-            </div>
-            <button class="btn btn-success" onclick="addVacationPeriod()">Ajouter la période de congés</button>
+            <div class="modal-header"><h2>Gestion des Congés</h2><span class="close" onclick="closeVacationModal()">&times;</span></div>
+            <div class="form-group"><label>Personnel</label><select id="vacationPersonnelSelect" class="day-select"></select></div>
+            <div class="form-group"><label>Date de début</label><input type="date" id="vacationStartDate"></div>
+            <div class="form-group"><label>Date de fin</label><input type="date" id="vacationEndDate"></div>
+            <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="arretTravail">Arrêt de travail</label></div>
+            <button class="btn btn-success" onclick="addVacationPeriod()">Ajouter</button>
             <div class="personnel-list" id="vacationList"></div>
         </div>
     </div>
 
     <div id="workModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Détails de l'affectation</h2>
-                <span class="close" onclick="closeWorkModal()">&times;</span>
-            </div>
-            <div class="form-group">
-                <label>Nom du client</label>
-                <input type="text" id="clientName" placeholder="Nom du client">
-            </div>
-            <div class="form-group">
-                <label>Site / Affaire</label>
-                <input type="text" id="siteName" placeholder="Site ou affaire">
-            </div>
-            <div class="form-group">
-                <label>Appliquer à ces jours de la semaine :</label>
+            <div class="modal-header"><h2>Détails de l'affectation</h2><span class="close" onclick="closeWorkModal()">&times;</span></div>
+            <div class="form-group"><label>Client</label><input type="text" id="clientName"></div>
+            <div class="form-group"><label>Site/Affaire</label><input type="text" id="siteName"></div>
+            <div class="form-group"><label>Appliquer à :</label>
                 <div class="checkbox-group">
                     <label class="checkbox-label"><input type="checkbox" id="applyMonday"> Lundi</label>
                     <label class="checkbox-label"><input type="checkbox" id="applyTuesday"> Mardi</label>
@@ -655,675 +172,15 @@
             </div>
             <button class="btn btn-success" onclick="saveWorkInfo()">Enregistrer</button>
             <div class="delete-options" id="deleteOptions" style="display:none;">
-                <h4>Supprimer l'affectation</h4>
-                <button class="btn btn-danger" onclick="deleteCurrentDay()">Supprimer uniquement ce jour</button>
-                <button class="btn btn-danger" onclick="deleteAllSelectedDays()">Supprimer tous les jours sélectionnés</button>
+                <h4>Supprimer</h4>
+                <button class="btn btn-danger" onclick="deleteCurrentDay()">Ce jour uniquement</button>
+                <button class="btn btn-danger" onclick="deleteAllSelectedDays()">Tous les jours sélectionnés</button>
             </div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
-    <script>
-        let db = null;
-        let currentYear = new Date().getFullYear();
-        let currentWeekStart = getMonday(new Date());
-        let currentTeam = '';
-        let allPersonnel = { atelier: [], chargeaffaire: [], bureau: [] };
-        let planningData = {};
-        let displayedPersonnel = [];
-        let vacationPeriods = [];
-        let currentWorkCell = null;
-
-        const holidays = {
-            2024: [
-                {date: '2024-01-01', name: 'Nouvel An'}, {date: '2024-04-01', name: 'Lundi de Pâques'},
-                {date: '2024-05-01', name: 'Fête du Travail'}, {date: '2024-05-08', name: 'Victoire 1945'},
-                {date: '2024-05-09', name: 'Ascension'}, {date: '2024-05-20', name: 'Lundi de Pentecôte'},
-                {date: '2024-07-14', name: 'Fête Nationale'}, {date: '2024-08-15', name: 'Assomption'},
-                {date: '2024-11-01', name: 'Toussaint'}, {date: '2024-11-11', name: 'Armistice 1918'},
-                {date: '2024-12-25', name: 'Noël'}
-            ],
-            2025: [
-                {date: '2025-01-01', name: 'Nouvel An'}, {date: '2025-04-21', name: 'Lundi de Pâques'},
-                {date: '2025-05-01', name: 'Fête du Travail'}, {date: '2025-05-08', name: 'Victoire 1945'},
-                {date: '2025-05-29', name: 'Ascension'}, {date: '2025-06-09', name: 'Lundi de Pentecôte'},
-                {date: '2025-07-14', name: 'Fête Nationale'}, {date: '2025-08-15', name: 'Assomption'},
-                {date: '2025-11-01', name: 'Toussaint'}, {date: '2025-11-11', name: 'Armistice 1918'},
-                {date: '2025-12-25', name: 'Noël'}
-            ],
-            2026: [
-                {date: '2026-01-01', name: 'Nouvel An'}, {date: '2026-04-06', name: 'Lundi de Pâques'},
-                {date: '2026-05-01', name: 'Fête du Travail'}, {date: '2026-05-08', name: 'Victoire 1945'},
-                {date: '2026-05-14', name: 'Ascension'}, {date: '2026-05-25', name: 'Lundi de Pentecôte'},
-                {date: '2026-07-14', name: 'Fête Nationale'}, {date: '2026-08-15', name: 'Assomption'},
-                {date: '2026-11-01', name: 'Toussaint'}, {date: '2026-11-11', name: 'Armistice 1918'},
-                {date: '2026-12-25', name: 'Noël'}
-            ]
-        };
-
-        function saveFirebaseConfig() {
-            const configText = document.getElementById('firebaseConfig').value.trim();
-            if (!configText) {
-                alert('Veuillez coller votre configuration Firebase');
-                return;
-            }
-
-            try {
-                const config = JSON.parse(configText);
-                localStorage.setItem('firebase_config', JSON.stringify(config));
-                
-                const banner = document.getElementById('setupBanner');
-                banner.classList.add('configured');
-                banner.innerHTML = '<h3>✅ Configuration enregistrée avec succès !</h3><p>Rechargez la page pour activer le mode collaboratif.</p><button onclick="location.reload()" class="btn btn-success" style="margin-top: 10px;">🔄 Recharger la page</button>';
-            } catch (e) {
-                alert('Erreur: Configuration Firebase invalide. Vérifiez le format JSON.');
-            }
-        }
-
-        function initFirebase() {
-            const savedConfig = localStorage.getItem('firebase_config');
-            if (!savedConfig) {
-                document.getElementById('syncStatus').textContent = '⚠️ Configuration requise';
-                document.getElementById('syncStatus').className = 'sync-status offline';
-                return false;
-            }
-
-            try {
-                const config = JSON.parse(savedConfig);
-                firebase.initializeApp(config);
-                db = firebase.database();
-                
-                document.getElementById('setupBanner').style.display = 'none';
-                document.getElementById('syncStatus').textContent = '✓ En ligne';
-                document.getElementById('syncStatus').className = 'sync-status online';
-                
-                setupFirebaseListeners();
-                return true;
-            } catch (e) {
-                console.error('Erreur Firebase:', e);
-                document.getElementById('syncStatus').textContent = '✗ Erreur connexion';
-                document.getElementById('syncStatus').className = 'sync-status offline';
-                return false;
-            }
-        }
-
-        function setupFirebaseListeners() {
-            db.ref('personnel').on('value', snap => {
-                if (snap.exists()) {
-                    allPersonnel = snap.val();
-                    if (currentTeam) updatePersonnelList();
-                    generatePlanning();
-                }
-            });
-
-            db.ref('planning').on('value', snap => {
-                if (snap.exists()) {
-                    planningData = snap.val();
-                    generatePlanning();
-                }
-            });
-
-            db.ref('displayed').on('value', snap => {
-                if (snap.exists()) {
-                    displayedPersonnel = snap.val();
-                    generatePlanning();
-                }
-            });
-
-            db.ref('vacations').on('value', snap => {
-                if (snap.exists()) {
-                    vacationPeriods = snap.val();
-                    if (document.getElementById('vacationModal').style.display === 'block') {
-                        updateVacationList();
-                    }
-                    generatePlanning();
-                }
-            });
-        }
-
-        function getMonday(d) {
-            d = new Date(d);
-            const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-            return new Date(d.setDate(diff));
-        }
-
-        function getWeekNumber(d) {
-            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        }
-
-        function getDateFromWeekNumber(year, week) {
-            const jan4 = new Date(year, 0, 4);
-            const monday = getMonday(jan4);
-            monday.setDate(monday.getDate() + (week - 1) * 7);
-            return monday;
-        }
-
-        function goToWeek() {
-            const weekNum = parseInt(document.getElementById('weekNumber').value);
-            if (!weekNum || weekNum < 1 || weekNum > 53) {
-                alert('Veuillez entrer un numéro de semaine valide (1-53)');
-                return;
-            }
-            currentWeekStart = getDateFromWeekNumber(currentYear, weekNum);
-            generatePlanning();
-        }
-
-        function formatDate(date) {
-            const d = new Date(date);
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            return `${d.getFullYear()}-${month}-${day}`;
-        }
-
-        function getWeekKey(date) {
-            return formatDate(getMonday(date));
-        }
-
-        function isHoliday(date) {
-            const dateStr = formatDate(date);
-            const yearHolidays = holidays[date.getFullYear()] || [];
-            return yearHolidays.find(h => h.date === dateStr);
-        }
-
-        function initYearSelector() {
-            const select = document.getElementById('yearSelect');
-            for (let year = 2024; year <= 2030; year++) {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                if (year === currentYear) option.selected = true;
-                select.appendChild(option);
-            }
-            select.addEventListener('change', e => {
-                const oldWeekNumber = getWeekNumber(currentWeekStart);
-                currentYear = parseInt(e.target.value);
-                currentWeekStart = getDateFromWeekNumber(currentYear, oldWeekNumber);
-                generatePlanning();
-            });
-        }
-
-        function generatePlanning() {
-            const header = document.getElementById('tableHeader');
-            const body = document.getElementById('tableBody');
-            const weekInfo = document.getElementById('weekInfo');
-            
-            header.innerHTML = '<th>Personnel</th>';
-            body.innerHTML = '';
-
-            const weekDays = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
-            const dates = [];
-
-            for (let i = 0; i < 5; i++) {
-                const date = new Date(currentWeekStart);
-                date.setDate(date.getDate() + i);
-                dates.push(date);
-
-                const holiday = isHoliday(date);
-                const dateStr = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-                const headerText = holiday ? `${weekDays[i]}<br>${dateStr}<br>${holiday.name}` : `${weekDays[i]}<br>${dateStr}`;
-                header.innerHTML += `<th class="${holiday ? 'holiday' : ''}">${headerText}</th>`;
-            }
-
-            const friday = dates[4];
-            const weekNumber = getWeekNumber(currentWeekStart);
-            weekInfo.innerHTML = `<span>Semaine du ${dates[0].getDate()}/${dates[0].getMonth() + 1}/${dates[0].getFullYear()} au ${friday.getDate()}/${friday.getMonth() + 1}/${friday.getFullYear()}</span><span class="week-number">Semaine N°${weekNumber}</span>`;
-            document.getElementById('weekNumber').value = weekNumber;
-
-            const weekKey = getWeekKey(currentWeekStart);
-            if (!planningData[weekKey]) planningData[weekKey] = {};
-
-            if (!displayedPersonnel || displayedPersonnel.length === 0) {
-                const emptyRow = document.createElement('tr');
-                emptyRow.innerHTML = '<td colspan="6" style="text-align: center; padding: 40px; color: #666; font-style: italic;">Aucun personnel affiché. Cliquez sur "+ Ajouter une ligne de personnel" pour commencer.</td>';
-                body.appendChild(emptyRow);
-                return;
-            }
-
-            displayedPersonnel.forEach((person, index) => {
-                const row = document.createElement('tr');
-                
-                const personnelSelect = document.createElement('select');
-                personnelSelect.className = `day-select personnel-cell personnel-${person.team}${person.stagiaire ? ' stagiaire' : ''}`;
-                personnelSelect.onchange = e => {
-                    const newPerson = findPersonnelById(e.target.value);
-                    if (newPerson && db) {
-                        displayedPersonnel[index] = newPerson;
-                        db.ref('displayed').set(displayedPersonnel);
-                    }
-                };
-
-                personnelSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
-                ['atelier', 'chargeaffaire', 'bureau'].forEach(team => {
-                    if (allPersonnel[team]) {
-                        allPersonnel[team].forEach(p => {
-                            personnelSelect.innerHTML += `<option value="${p.id}" ${p.id === person.id ? 'selected' : ''}>${p.name}</option>`;
-                        });
-                    }
-                });
-
-                const personnelCell = document.createElement('td');
-                personnelCell.className = `personnel-cell personnel-${person.team}${person.stagiaire ? ' stagiaire' : ''}`;
-                personnelCell.appendChild(personnelSelect);
-                row.appendChild(personnelCell);
-
-                dates.forEach(date => {
-                    const dateKey = formatDate(date);
-                    const cellKey = cleanFirebaseKey(`${person.id}_${dateKey}`);
-                    const cell = document.createElement('td');
-                    const holiday = isHoliday(date);
-
-                    const vacation = vacationPeriods.find(vac => {
-                        if (vac.personnelId !== person.id) return false;
-                        const vacStart = new Date(vac.startDate);
-                        const vacEnd = new Date(vac.endDate);
-                        vacEnd.setHours(23, 59, 59, 999);
-                        return date >= vacStart && date <= vacEnd;
-                    });
-
-                    if (holiday) {
-                        cell.className = 'holiday';
-                        cell.textContent = holiday.name;
-                    } else if (vacation) {
-                        cell.className = vacation.arretTravail ? 'arret-travail' : 'vacation';
-                        cell.textContent = vacation.arretTravail ? 'Arrêt travail' : 'Congé';
-                    } else {
-                        const workData = planningData[weekKey] ? planningData[weekKey][cellKey] : null;
-                        cell.className = 'work-cell';
-                        if (workData?.client) {
-                            const info = document.createElement('div');
-                            info.className = 'work-info';
-                            info.innerHTML = `<strong>${workData.client}</strong>${workData.site}`;
-                            cell.appendChild(info);
-                        }
-                        cell.onclick = () => openWorkModal(person, date, dateKey);
-                    }
-
-                    row.appendChild(cell);
-                });
-
-                body.appendChild(row);
-            });
-        }
-
-        function openWorkModal(person, date, dateKey) {
-            currentWorkCell = { person, date, dateKey };
-            const weekKey = getWeekKey(currentWeekStart);
-            const cellKey = cleanFirebaseKey(`${person.id}_${dateKey}`);
-            const workData = planningData[weekKey] ? planningData[weekKey][cellKey] : null;
-
-            document.getElementById('clientName').value = workData?.client || '';
-            document.getElementById('siteName').value = workData?.site || '';
-
-            ['applyMonday', 'applyTuesday', 'applyWednesday', 'applyThursday', 'applyFriday'].forEach(id => {
-                document.getElementById(id).checked = false;
-            });
-
-            const dayIds = ['', 'applyMonday', 'applyTuesday', 'applyWednesday', 'applyThursday', 'applyFriday'];
-            const dayOfWeek = date.getDay();
-            if (dayIds[dayOfWeek]) document.getElementById(dayIds[dayOfWeek]).checked = true;
-
-            document.getElementById('deleteOptions').style.display = workData?.client ? 'block' : 'none';
-            document.getElementById('workModal').style.display = 'block';
-        }
-
-        function closeWorkModal() {
-            document.getElementById('workModal').style.display = 'none';
-        }
-
-        function saveWorkInfo() {
-            if (!currentWorkCell || !db) return;
-
-            const client = document.getElementById('clientName').value.trim();
-            const site = document.getElementById('siteName').value.trim();
-
-            if (!client && !site) {
-                alert('Veuillez renseigner au moins le nom du client ou le site');
-                return;
-            }
-
-            const weekKey = getWeekKey(currentWeekStart);
-            if (!planningData[weekKey]) planningData[weekKey] = {};
-
-            const dayCheckboxes = [
-                { id: 'applyMonday', dayOffset: 0 },
-                { id: 'applyTuesday', dayOffset: 1 },
-                { id: 'applyWednesday', dayOffset: 2 },
-                { id: 'applyThursday', dayOffset: 3 },
-                { id: 'applyFriday', dayOffset: 4 }
-            ];
-
-            dayCheckboxes.forEach(({ id, dayOffset }) => {
-                if (document.getElementById(id).checked) {
-                    const date = new Date(currentWeekStart);
-                    date.setDate(date.getDate() + dayOffset);
-                    const cellKey = `${currentWorkCell.person.id}_${formatDate(date)}`;
-                    planningData[weekKey][cellKey] = { client, site };
-                }
-            });
-
-            db.ref('planning').set(planningData);
-            closeWorkModal();
-        }
-
-        function deleteCurrentDay() {
-            if (!currentWorkCell || !db) return;
-            const weekKey = getWeekKey(currentWeekStart);
-            const cellKey = `${currentWorkCell.person.id}_${currentWorkCell.dateKey}`;
-            delete planningData[weekKey][cellKey];
-            db.ref('planning').set(planningData);
-            closeWorkModal();
-        }
-
-        function deleteAllSelectedDays() {
-            if (!currentWorkCell || !db) return;
-            const weekKey = getWeekKey(currentWeekStart);
-            const dayCheckboxes = [
-                { id: 'applyMonday', dayOffset: 0 },
-                { id: 'applyTuesday', dayOffset: 1 },
-                { id: 'applyWednesday', dayOffset: 2 },
-                { id: 'applyThursday', dayOffset: 3 },
-                { id: 'applyFriday', dayOffset: 4 }
-            ];
-
-            dayCheckboxes.forEach(({ id, dayOffset }) => {
-                if (document.getElementById(id).checked) {
-                    const date = new Date(currentWeekStart);
-                    date.setDate(date.getDate() + dayOffset);
-                    const cellKey = `${currentWorkCell.person.id}_${formatDate(date)}`;
-                    delete planningData[weekKey][cellKey];
-                }
-            });
-
-            db.ref('planning').set(planningData);
-            closeWorkModal();
-        }
-
-        function findPersonnelById(id) {
-            for (let team in allPersonnel) {
-                const person = allPersonnel[team].find(p => p.id === id);
-                if (person) return person;
-            }
-            return null;
-        }
-
-        function openTeamModal(team) {
-            currentTeam = team;
-            const titles = {
-                atelier: 'Personnel Atelier',
-                chargeaffaire: 'Personnel Chargé d\'affaire',
-                bureau: 'Personnel Bureau'
-            };
-            document.getElementById('modalTitle').textContent = titles[team];
-            document.getElementById('teamModal').style.display = 'block';
-            updatePersonnelList();
-        }
-
-        function closeModal() {
-            document.getElementById('teamModal').style.display = 'none';
-            document.getElementById('personnelName').value = '';
-            document.getElementById('stagiaire').checked = false;
-        }
-
-        function addPersonnel() {
-            if (!db) return;
-            const name = document.getElementById('personnelName').value.trim();
-            if (!name) {
-                alert('Veuillez entrer un nom');
-                return;
-            }
-
-            const person = {
-                id: Date.now() + '_' + Math.random(),
-                name: name,
-                team: currentTeam,
-                stagiaire: document.getElementById('stagiaire').checked
-            };
-
-            allPersonnel[currentTeam].push(person);
-            db.ref('personnel').set(allPersonnel);
-            
-            document.getElementById('personnelName').value = '';
-            document.getElementById('stagiaire').checked = false;
-        }
-
-        function updatePersonnelList() {
-            const list = document.getElementById('personnelList');
-            list.innerHTML = '<h3>Personnel actuel</h3>';
-
-            allPersonnel[currentTeam].forEach((person, index) => {
-                const div = document.createElement('div');
-                div.className = 'personnel-item';
-                div.innerHTML = `<h4>${person.name}${person.stagiaire ? ' (Stagiaire/Alternant)' : ''}</h4><button class="btn btn-warning" onclick="removePersonnel(${index})">Supprimer</button>`;
-                list.appendChild(div);
-            });
-        }
-
-        function removePersonnel(index) {
-            if (!db) return;
-            const person = allPersonnel[currentTeam][index];
-            allPersonnel[currentTeam].splice(index, 1);
-            
-            displayedPersonnel = displayedPersonnel.filter(p => p.id !== person.id);
-            
-            db.ref('personnel').set(allPersonnel);
-            db.ref('displayed').set(displayedPersonnel);
-        }
-
-        function removePersonnel(index) {
-            if (!db) return;
-            const person = allPersonnel[currentTeam][index];
-            allPersonnel[currentTeam].splice(index, 1);
-            displayedPersonnel = displayedPersonnel.filter(p => p.id !== person.id);
-            
-            db.ref('personnel').set(allPersonnel);
-            db.ref('displayed').set(displayedPersonnel);
-        }
-
-        function addPersonnelRow() {
-            if (!db) {
-                alert('Connexion Firebase non établie');
-                return;
-            }
-            
-            console.log('Personnel disponible:', allPersonnel);
-            console.log('Personnel déjà affiché:', displayedPersonnel);
-            
-            const allPeople = [];
-            ['atelier', 'chargeaffaire', 'bureau'].forEach(team => {
-                if (allPersonnel[team] && Array.isArray(allPersonnel[team])) {
-                    allPersonnel[team].forEach(p => {
-                        const alreadyDisplayed = displayedPersonnel && Array.isArray(displayedPersonnel) 
-                            ? displayedPersonnel.find(dp => dp.id === p.id)
-                            : false;
-                        
-                        if (!alreadyDisplayed) {
-                            allPeople.push(p);
-                        }
-                    });
-                }
-            });
-
-            console.log('Personnel non affiché:', allPeople);
-
-            if (allPeople.length === 0) {
-                alert('Aucun personnel disponible.\n\nVeuillez d\'abord créer du personnel dans les équipes :\n- Personnel Atelier\n- Personnel Chargé d\'affaire\n- Personnel Bureau');
-                return;
-            }
-
-            if (!Array.isArray(displayedPersonnel)) {
-                displayedPersonnel = [];
-            }
-
-            displayedPersonnel.push(allPeople[0]);
-            
-            console.log('Ajout de:', allPeople[0]);
-            console.log('Nouveau displayedPersonnel:', displayedPersonnel);
-            
-            db.ref('displayed').set(displayedPersonnel).then(() => {
-                console.log('Ligne de personnel ajoutée avec succès');
-            }).catch(err => {
-                console.error('Erreur lors de l\'ajout:', err);
-                alert('Erreur lors de l\'ajout du personnel: ' + err.message);
-            });
-        }
-
-        function previousWeek() {
-            const newDate = new Date(currentWeekStart);
-            newDate.setDate(newDate.getDate() - 7);
-            currentWeekStart = newDate;
-            const newYear = newDate.getFullYear();
-            if (newYear !== currentYear) {
-                currentYear = newYear;
-                document.getElementById('yearSelect').value = currentYear;
-            }
-            generatePlanning();
-        }
-
-        function nextWeek() {
-            const newDate = new Date(currentWeekStart);
-            newDate.setDate(newDate.getDate() + 7);
-            currentWeekStart = newDate;
-            const newYear = newDate.getFullYear();
-            if (newYear !== currentYear) {
-                currentYear = newYear;
-                document.getElementById('yearSelect').value = currentYear;
-            }
-            generatePlanning();
-        }
-
-        function printPlanning() {
-            window.print();
-        }
-
-        function openVacationModal() {
-            const select = document.getElementById('vacationPersonnelSelect');
-            select.innerHTML = '<option value="">-- Choisir un personnel --</option>';
-            
-            ['atelier', 'chargeaffaire', 'bureau'].forEach(team => {
-                allPersonnel[team].forEach(p => {
-                    select.innerHTML += `<option value="${p.id}">${p.name} (${team})</option>`;
-                });
-            });
-            
-            document.getElementById('vacationModal').style.display = 'block';
-            updateVacationList();
-        }
-
-        function closeVacationModal() {
-            document.getElementById('vacationModal').style.display = 'none';
-            document.getElementById('vacationPersonnelSelect').value = '';
-            document.getElementById('vacationStartDate').value = '';
-            document.getElementById('vacationEndDate').value = '';
-            document.getElementById('arretTravail').checked = false;
-        }
-
-        function addVacationPeriod() {
-            if (!db) return;
-            const personnelId = document.getElementById('vacationPersonnelSelect').value;
-            const startDate = document.getElementById('vacationStartDate').value;
-            const endDate = document.getElementById('vacationEndDate').value;
-            const arretTravail = document.getElementById('arretTravail').checked;
-
-            if (!personnelId || !startDate || !endDate) {
-                alert('Veuillez remplir tous les champs');
-                return;
-            }
-
-            if (new Date(startDate) > new Date(endDate)) {
-                alert('La date de début doit être antérieure à la date de fin');
-                return;
-            }
-
-            const person = findPersonnelById(personnelId);
-            vacationPeriods.push({
-                id: Date.now() + '_' + Math.random(),
-                personnelId,
-                personnelName: person.name,
-                startDate,
-                endDate,
-                arretTravail
-            });
-
-            db.ref('vacations').set(vacationPeriods);
-            
-            document.getElementById('vacationPersonnelSelect').value = '';
-            document.getElementById('vacationStartDate').value = '';
-            document.getElementById('vacationEndDate').value = '';
-            document.getElementById('arretTravail').checked = false;
-        }
-
-        function updateVacationList() {
-            const list = document.getElementById('vacationList');
-            list.innerHTML = '<h3>Périodes de congés enregistrées</h3>';
-
-            if (vacationPeriods.length === 0) {
-                list.innerHTML += '<p>Aucune période de congés enregistrée</p>';
-                return;
-            }
-
-            vacationPeriods.forEach((vacation, index) => {
-                const div = document.createElement('div');
-                div.className = 'personnel-item';
-                const startFormatted = new Date(vacation.startDate).toLocaleDateString('fr-FR');
-                const endFormatted = new Date(vacation.endDate).toLocaleDateString('fr-FR');
-                div.innerHTML = `<h4>${vacation.personnelName}${vacation.arretTravail ? ' (Arrêt de travail)' : ''}</h4><p>Du ${startFormatted} au ${endFormatted}</p><button class="btn btn-warning" onclick="removeVacation(${index})">Supprimer</button>`;
-                list.appendChild(div);
-            });
-        }
-
-        function removeVacation(index) {
-            if (!db) return;
-            vacationPeriods.splice(index, 1);
-            db.ref('vacations').set(vacationPeriods);
-        }
-
-        window.onclick = e => {
-            if (e.target.id === 'teamModal') closeModal();
-            if (e.target.id === 'vacationModal') closeVacationModal();
-            if (e.target.id === 'workModal') closeWorkModal();
-        }
-
-        let wheelTimeout = null;
-        document.addEventListener('wheel', e => {
-            // Gestion spéciale pour le champ numéro de semaine
-            if (e.target.id === 'weekNumber') {
-                e.preventDefault();
-                const input = e.target;
-                let currentValue = parseInt(input.value) || getWeekNumber(currentWeekStart);
-                
-                if (e.deltaY < 0) {
-                    // Molette vers le haut = augmenter
-                    currentValue = Math.min(53, currentValue + 1);
-                } else {
-                    // Molette vers le bas = diminuer
-                    currentValue = Math.max(1, currentValue - 1);
-                }
-                
-                input.value = currentValue;
-                currentWeekStart = getDateFromWeekNumber(currentYear, currentValue);
-                generatePlanning();
-                return;
-            }
-
-            // Navigation normale du planning
-            if (e.target.closest('.modal') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
-            if (wheelTimeout) return;
-            wheelTimeout = setTimeout(() => wheelTimeout = null, 300);
-            if (e.deltaY > 0) nextWeek();
-            else if (e.deltaY < 0) previousWeek();
-            e.preventDefault();
-        }, { passive: false });
-
-        initYearSelector();
-        if (initFirebase()) {
-            generatePlanning();
-        }
-    </script>
+    <script src="planning.js"></script>
 </body>
 </html>
