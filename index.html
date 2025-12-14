@@ -1172,17 +1172,28 @@
                 return;
             }
             
+            console.log('Personnel disponible:', allPersonnel);
+            console.log('Personnel déjà affiché:', displayedPersonnel);
+            
             const allPeople = [];
             ['atelier', 'chargeaffaire', 'bureau'].forEach(team => {
-                if (allPersonnel[team]) {
+                if (allPersonnel[team] && Array.isArray(allPersonnel[team])) {
                     allPersonnel[team].forEach(p => {
-                        if (!displayedPersonnel.find(dp => dp.id === p.id)) allPeople.push(p);
+                        const alreadyDisplayed = displayedPersonnel && Array.isArray(displayedPersonnel) 
+                            ? displayedPersonnel.find(dp => dp.id === p.id)
+                            : false;
+                        
+                        if (!alreadyDisplayed) {
+                            allPeople.push(p);
+                        }
                     });
                 }
             });
 
+            console.log('Personnel non affiché:', allPeople);
+
             if (allPeople.length === 0) {
-                alert('Aucun personnel disponible. Veuillez d\'abord créer du personnel dans les équipes (Personnel Atelier, Chargé d\'affaire ou Bureau).');
+                alert('Aucun personnel disponible.\n\nVeuillez d\'abord créer du personnel dans les équipes :\n- Personnel Atelier\n- Personnel Chargé d\'affaire\n- Personnel Bureau');
                 return;
             }
 
@@ -1191,11 +1202,15 @@
             }
 
             displayedPersonnel.push(allPeople[0]);
+            
+            console.log('Ajout de:', allPeople[0]);
+            console.log('Nouveau displayedPersonnel:', displayedPersonnel);
+            
             db.ref('displayed').set(displayedPersonnel).then(() => {
-                console.log('Personnel ajouté avec succès');
+                console.log('Ligne de personnel ajoutée avec succès');
             }).catch(err => {
                 console.error('Erreur lors de l\'ajout:', err);
-                alert('Erreur lors de l\'ajout du personnel');
+                alert('Erreur lors de l\'ajout du personnel: ' + err.message);
             });
         }
 
