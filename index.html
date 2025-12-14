@@ -574,10 +574,6 @@
         </table>
 
         <button class="btn btn-success add-personnel-btn no-print" onclick="addPersonnelRow()">+ Ajouter une ligne de personnel</button>
-        
-        <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px;" class="no-print">
-            <button class="btn btn-warning" onclick="debugPersonnel()" style="width: 100%;">🔍 Déboguer (voir console F12)</button>
-        </div>
     </div>
 
     <!-- Modals -->
@@ -755,46 +751,35 @@
 
         function setupFirebaseListeners() {
             db.ref('personnel').on('value', snap => {
-                const newData = snap.exists() ? snap.val() : { atelier: [], chargeaffaire: [], bureau: [] };
-                
-                // S'assurer que tous les tableaux existent
-                if (!newData.atelier) newData.atelier = [];
-                if (!newData.chargeaffaire) newData.chargeaffaire = [];
-                if (!newData.bureau) newData.bureau = [];
-                
-                allPersonnel = newData;
-                
-                if (currentTeam && document.getElementById('teamModal').style.display === 'block') {
-                    updatePersonnelList();
+                if (snap.exists()) {
+                    allPersonnel = snap.val();
+                    if (currentTeam) updatePersonnelList();
+                    generatePlanning();
                 }
-                if (document.getElementById('vacationModal').style.display === 'block') {
-                    updateVacationPersonnelSelect();
-                }
-                generatePlanning();
             });
 
             db.ref('planning').on('value', snap => {
-                planningData = snap.exists() ? snap.val() : {};
-                generatePlanning();
+                if (snap.exists()) {
+                    planningData = snap.val();
+                    generatePlanning();
+                }
             });
 
             db.ref('displayed').on('value', snap => {
-                displayedPersonnel = snap.exists() ? snap.val() : [];
-                if (!Array.isArray(displayedPersonnel)) {
-                    displayedPersonnel = [];
+                if (snap.exists()) {
+                    displayedPersonnel = snap.val();
+                    generatePlanning();
                 }
-                generatePlanning();
             });
 
             db.ref('vacations').on('value', snap => {
-                vacationPeriods = snap.exists() ? snap.val() : [];
-                if (!Array.isArray(vacationPeriods)) {
-                    vacationPeriods = [];
+                if (snap.exists()) {
+                    vacationPeriods = snap.val();
+                    if (document.getElementById('vacationModal').style.display === 'block') {
+                        updateVacationList();
+                    }
+                    generatePlanning();
                 }
-                if (document.getElementById('vacationModal').style.display === 'block') {
-                    updateVacationList();
-                }
-                generatePlanning();
             });
         }
 
@@ -1086,11 +1071,7 @@
         }
 
         function addPersonnel() {
-            if (!db) {
-                alert('Connexion Firebase non établie');
-                return;
-            }
-            
+            if (!db) return;
             const name = document.getElementById('personnelName').value.trim();
             if (!name) {
                 alert('Veuillez entrer un nom');
@@ -1104,57 +1085,31 @@
                 stagiaire: document.getElementById('stagiaire').checked
             };
 
-            if (!Array.isArray(allPersonnel[currentTeam])) {
-                allPersonnel[currentTeam] = [];
-            }
-
             allPersonnel[currentTeam].push(person);
+            db.ref('personnel').set(allPersonnel);
             
-            db.ref('personnel').set(allPersonnel).then(() => {
-                console.log('Personnel ajouté avec succès:', person);
-                document.getElementById('personnelName').value = '';
-                document.getElementById('stagiaire').checked = false;
-            }).catch(err => {
-                console.error('Erreur lors de l\'ajout:', err);
-                alert('Erreur lors de l\'ajout du personnel');
-            });
+            document.getElementById('personnelName').value = '';
+            document.getElementById('stagiaire').checked = false;
         }
 
         function updatePersonnelList() {
             const list = document.getElementById('personnelList');
             list.innerHTML = '<h3>Personnel actuel</h3>';
 
-            if (!allPersonnel[currentTeam] || allPersonnel[currentTeam].length === 0) {
-                list.innerHTML += '<p style="color: #666; font-style: italic;">Aucun personnel pour le moment</p>';
-                return;
-            }
-
-            allPersonnel[currentTeam].forEach((person) => {
+            allPersonnel[currentTeam].forEach((person, index) => {
                 const div = document.createElement('div');
                 div.className = 'personnel-item';
-                
-                const h4 = document.createElement('h4');
-                h4.textContent = person.name + (person.stagiaire ? ' (Stagiaire/Alternant)' : '');
-                
-                const btn = document.createElement('button');
-                btn.className = 'btn btn-warning';
-                btn.textContent = 'Supprimer';
-                btn.onclick = () => removePersonnelById(person.id);
-                
-                div.appendChild(h4);
-                div.appendChild(btn);
+                div.innerHTML = `<h4>${person.name}${person.stagiaire ? ' (Stagiaire/Alternant)' : ''}</h4><button class="btn btn-warning" onclick="removePersonnel(${index})">Supprimer</button>`;
                 list.appendChild(div);
             });
         }
 
-        function removePersonnelById(personId) {
+        function removePersonnel(index) {
             if (!db) return;
-            const person = findPersonnelById(personId);
-            if (!person) return;
+            const person = allPersonnel[currentTeam][index];
+            allPersonnel[currentTeam].splice(index, 1);
             
-            const team = person.team;
-            allPersonnel[team] = allPersonnel[team].filter(p => p.id !== personId);
-            displayedPersonnel = displayedPersonnel.filter(p => p.id !== personId);
+            displayedPersonnel = displayedPersonnel.filter(p => p.id !== person.id);
             
             db.ref('personnel').set(allPersonnel);
             db.ref('displayed').set(displayedPersonnel);
@@ -1247,23 +1202,17 @@
         }
 
         function openVacationModal() {
-            const modal = document.getElementById('vacationModal');
-            modal.style.display = 'block';
-            updateVacationPersonnelSelect();
-            updateVacationList();
-        }
-
-        function updateVacationPersonnelSelect() {
             const select = document.getElementById('vacationPersonnelSelect');
             select.innerHTML = '<option value="">-- Choisir un personnel --</option>';
             
             ['atelier', 'chargeaffaire', 'bureau'].forEach(team => {
-                if (allPersonnel[team]) {
-                    allPersonnel[team].forEach(p => {
-                        select.innerHTML += `<option value="${p.id}">${p.name} (${team})</option>`;
-                    });
-                }
+                allPersonnel[team].forEach(p => {
+                    select.innerHTML += `<option value="${p.id}">${p.name} (${team})</option>`;
+                });
             });
+            
+            document.getElementById('vacationModal').style.display = 'block';
+            updateVacationList();
         }
 
         function closeVacationModal() {
@@ -1275,11 +1224,7 @@
         }
 
         function addVacationPeriod() {
-            if (!db) {
-                alert('Connexion Firebase non établie');
-                return;
-            }
-            
+            if (!db) return;
             const personnelId = document.getElementById('vacationPersonnelSelect').value;
             const startDate = document.getElementById('vacationStartDate').value;
             const endDate = document.getElementById('vacationEndDate').value;
@@ -1296,15 +1241,6 @@
             }
 
             const person = findPersonnelById(personnelId);
-            if (!person) {
-                alert('Personnel introuvable');
-                return;
-            }
-            
-            if (!Array.isArray(vacationPeriods)) {
-                vacationPeriods = [];
-            }
-            
             vacationPeriods.push({
                 id: Date.now() + '_' + Math.random(),
                 personnelId,
@@ -1314,54 +1250,36 @@
                 arretTravail
             });
 
-            db.ref('vacations').set(vacationPeriods).then(() => {
-                console.log('Congés ajoutés avec succès');
-                document.getElementById('vacationPersonnelSelect').value = '';
-                document.getElementById('vacationStartDate').value = '';
-                document.getElementById('vacationEndDate').value = '';
-                document.getElementById('arretTravail').checked = false;
-            }).catch(err => {
-                console.error('Erreur lors de l\'ajout:', err);
-                alert('Erreur lors de l\'ajout des congés');
-            });
+            db.ref('vacations').set(vacationPeriods);
+            
+            document.getElementById('vacationPersonnelSelect').value = '';
+            document.getElementById('vacationStartDate').value = '';
+            document.getElementById('vacationEndDate').value = '';
+            document.getElementById('arretTravail').checked = false;
         }
 
         function updateVacationList() {
             const list = document.getElementById('vacationList');
             list.innerHTML = '<h3>Périodes de congés enregistrées</h3>';
 
-            if (!vacationPeriods || vacationPeriods.length === 0) {
+            if (vacationPeriods.length === 0) {
                 list.innerHTML += '<p>Aucune période de congés enregistrée</p>';
                 return;
             }
 
-            vacationPeriods.forEach((vacation) => {
+            vacationPeriods.forEach((vacation, index) => {
                 const div = document.createElement('div');
                 div.className = 'personnel-item';
-                
-                const h4 = document.createElement('h4');
-                h4.textContent = vacation.personnelName + (vacation.arretTravail ? ' (Arrêt de travail)' : '');
-                
-                const p = document.createElement('p');
                 const startFormatted = new Date(vacation.startDate).toLocaleDateString('fr-FR');
                 const endFormatted = new Date(vacation.endDate).toLocaleDateString('fr-FR');
-                p.textContent = `Du ${startFormatted} au ${endFormatted}`;
-                
-                const btn = document.createElement('button');
-                btn.className = 'btn btn-warning';
-                btn.textContent = 'Supprimer';
-                btn.onclick = () => removeVacationById(vacation.id);
-                
-                div.appendChild(h4);
-                div.appendChild(p);
-                div.appendChild(btn);
+                div.innerHTML = `<h4>${vacation.personnelName}${vacation.arretTravail ? ' (Arrêt de travail)' : ''}</h4><p>Du ${startFormatted} au ${endFormatted}</p><button class="btn btn-warning" onclick="removeVacation(${index})">Supprimer</button>`;
                 list.appendChild(div);
             });
         }
 
-        function removeVacationById(vacationId) {
+        function removeVacation(index) {
             if (!db) return;
-            vacationPeriods = vacationPeriods.filter(v => v.id !== vacationId);
+            vacationPeriods.splice(index, 1);
             db.ref('vacations').set(vacationPeriods);
         }
 
