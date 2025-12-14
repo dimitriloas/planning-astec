@@ -1256,7 +1256,11 @@
         }
 
         function addVacationPeriod() {
-            if (!db) return;
+            if (!db) {
+                alert('Connexion Firebase non établie');
+                return;
+            }
+            
             const personnelId = document.getElementById('vacationPersonnelSelect').value;
             const startDate = document.getElementById('vacationStartDate').value;
             const endDate = document.getElementById('vacationEndDate').value;
@@ -1273,6 +1277,15 @@
             }
 
             const person = findPersonnelById(personnelId);
+            if (!person) {
+                alert('Personnel introuvable');
+                return;
+            }
+            
+            if (!Array.isArray(vacationPeriods)) {
+                vacationPeriods = [];
+            }
+            
             vacationPeriods.push({
                 id: Date.now() + '_' + Math.random(),
                 personnelId,
@@ -1282,12 +1295,16 @@
                 arretTravail
             });
 
-            db.ref('vacations').set(vacationPeriods);
-            
-            document.getElementById('vacationPersonnelSelect').value = '';
-            document.getElementById('vacationStartDate').value = '';
-            document.getElementById('vacationEndDate').value = '';
-            document.getElementById('arretTravail').checked = false;
+            db.ref('vacations').set(vacationPeriods).then(() => {
+                console.log('Congés ajoutés avec succès');
+                document.getElementById('vacationPersonnelSelect').value = '';
+                document.getElementById('vacationStartDate').value = '';
+                document.getElementById('vacationEndDate').value = '';
+                document.getElementById('arretTravail').checked = false;
+            }).catch(err => {
+                console.error('Erreur lors de l\'ajout:', err);
+                alert('Erreur lors de l\'ajout des congés');
+            });
         }
 
         function updateVacationList() {
