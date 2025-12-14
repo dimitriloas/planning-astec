@@ -925,7 +925,7 @@
 
                 dates.forEach(date => {
                     const dateKey = formatDate(date);
-                    const cellKey = `${person.id}_${dateKey}`;
+                    const cellKey = cleanFirebaseKey(`${person.id}_${dateKey}`);
                     const cell = document.createElement('td');
                     const holiday = isHoliday(date);
 
@@ -944,7 +944,7 @@
                         cell.className = vacation.arretTravail ? 'arret-travail' : 'vacation';
                         cell.textContent = vacation.arretTravail ? 'Arrêt travail' : 'Congé';
                     } else {
-                        const workData = planningData[weekKey][cellKey];
+                        const workData = planningData[weekKey] ? planningData[weekKey][cellKey] : null;
                         cell.className = 'work-cell';
                         if (workData?.client) {
                             const info = document.createElement('div');
@@ -965,8 +965,8 @@
         function openWorkModal(person, date, dateKey) {
             currentWorkCell = { person, date, dateKey };
             const weekKey = getWeekKey(currentWeekStart);
-            const cellKey = `${person.id}_${dateKey}`;
-            const workData = planningData[weekKey][cellKey];
+            const cellKey = cleanFirebaseKey(`${person.id}_${dateKey}`);
+            const workData = planningData[weekKey] ? planningData[weekKey][cellKey] : null;
 
             document.getElementById('clientName').value = workData?.client || '';
             document.getElementById('siteName').value = workData?.site || '';
