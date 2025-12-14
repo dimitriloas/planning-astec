@@ -535,7 +535,7 @@
                     </div>
                     <div>
                         <label for="weekNumber">Semaine N° : </label>
-                        <input type="number" id="weekNumber" class="year-selector" style="width: 80px;" min="1" max="53" placeholder="1-53">
+                        <input type="number" id="weekNumber" class="year-selector" style="width: 80px;" min="1" max="53" placeholder="1-53" onkeypress="if(event.key==='Enter') goToWeek()">
                         <button class="btn btn-primary" onclick="goToWeek()" style="margin-left: 5px; padding: 8px 15px;">Aller</button>
                     </div>
                 </div>
@@ -753,7 +753,12 @@
             db.ref('personnel').on('value', snap => {
                 if (snap.exists()) {
                     allPersonnel = snap.val();
-                    if (currentTeam) updatePersonnelList();
+                    if (currentTeam && document.getElementById('teamModal').style.display === 'block') {
+                        updatePersonnelList();
+                    }
+                    if (document.getElementById('vacationModal').style.display === 'block') {
+                        updateVacationPersonnelSelect();
+                    }
                     generatePlanning();
                 }
             });
@@ -878,6 +883,13 @@
             const weekKey = getWeekKey(currentWeekStart);
             if (!planningData[weekKey]) planningData[weekKey] = {};
 
+            if (!displayedPersonnel || displayedPersonnel.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = '<td colspan="6" style="text-align: center; padding: 40px; color: #666; font-style: italic;">Aucun personnel affiché. Cliquez sur "+ Ajouter une ligne de personnel" pour commencer.</td>';
+                body.appendChild(emptyRow);
+                return;
+            }
+
             displayedPersonnel.forEach((person, index) => {
                 const row = document.createElement('tr');
                 
@@ -893,9 +905,11 @@
 
                 personnelSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
                 ['atelier', 'chargeaffaire', 'bureau'].forEach(team => {
-                    allPersonnel[team].forEach(p => {
-                        personnelSelect.innerHTML += `<option value="${p.id}" ${p.id === person.id ? 'selected' : ''}>${p.name}</option>`;
-                    });
+                    if (allPersonnel[team]) {
+                        allPersonnel[team].forEach(p => {
+                            personnelSelect.innerHTML += `<option value="${p.id}" ${p.id === person.id ? 'selected' : ''}>${p.name}</option>`;
+                        });
+                    }
                 });
 
                 const personnelCell = document.createElement('td');
@@ -1087,6 +1101,11 @@
             const list = document.getElementById('personnelList');
             list.innerHTML = '<h3>Personnel actuel</h3>';
 
+            if (!allPersonnel[currentTeam] || allPersonnel[currentTeam].length === 0) {
+                list.innerHTML += '<p style="color: #666; font-style: italic;">Aucun personnel pour le moment</p>';
+                return;
+            }
+
             allPersonnel[currentTeam].forEach((person, index) => {
                 const div = document.createElement('div');
                 div.className = 'personnel-item';
@@ -1152,17 +1171,23 @@
         }
 
         function openVacationModal() {
+            const modal = document.getElementById('vacationModal');
+            modal.style.display = 'block';
+            updateVacationPersonnelSelect();
+            updateVacationList();
+        }
+
+        function updateVacationPersonnelSelect() {
             const select = document.getElementById('vacationPersonnelSelect');
             select.innerHTML = '<option value="">-- Choisir un personnel --</option>';
             
             ['atelier', 'chargeaffaire', 'bureau'].forEach(team => {
-                allPersonnel[team].forEach(p => {
-                    select.innerHTML += `<option value="${p.id}">${p.name} (${team})</option>`;
-                });
+                if (allPersonnel[team]) {
+                    allPersonnel[team].forEach(p => {
+                        select.innerHTML += `<option value="${p.id}">${p.name} (${team})</option>`;
+                    });
+                }
             });
-            
-            document.getElementById('vacationModal').style.display = 'block';
-            updateVacationList();
         }
 
         function closeVacationModal() {
@@ -1241,6 +1266,27 @@
 
         let wheelTimeout = null;
         document.addEventListener('wheel', e => {
+            // Gestion spéciale pour le champ numéro de semaine
+            if (e.target.id === 'weekNumber') {
+                e.preventDefault();
+                const input = e.target;
+                let currentValue = parseInt(input.value) || getWeekNumber(currentWeekStart);
+                
+                if (e.deltaY < 0) {
+                    // Molette vers le haut = augmenter
+                    currentValue = Math.min(53, currentValue + 1);
+                } else {
+                    // Molette vers le bas = diminuer
+                    currentValue = Math.max(1, currentValue - 1);
+                }
+                
+                input.value = currentValue;
+                currentWeekStart = getDateFromWeekNumber(currentYear, currentValue);
+                generatePlanning();
+                return;
+            }
+
+            // Navigation normale du planning
             if (e.target.closest('.modal') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
             if (wheelTimeout) return;
             wheelTimeout = setTimeout(() => wheelTimeout = null, 300);
