@@ -128,6 +128,10 @@ function formatDate(date) {
     return `${d.getFullYear()}-${month}-${day}`;
 }
 
+function cleanFirebaseKey(key) {
+    return key.replace(/[.#$\[\]]/g, '_');
+}
+
 function getWeekKey(date) {
     return formatDate(getMonday(date));
 }
@@ -221,7 +225,7 @@ function generatePlanning() {
 
         dates.forEach(date => {
             const dateKey = formatDate(date);
-            const cellKey = `${person.id}_${dateKey}`;
+            const cellKey = cleanFirebaseKey(`${person.id}_${dateKey}`);
             const cell = document.createElement('td');
             const holiday = isHoliday(date);
 
@@ -261,7 +265,7 @@ function generatePlanning() {
 function openWorkModal(person, date, dateKey) {
     currentWorkCell = { person, date, dateKey };
     const weekKey = getWeekKey(currentWeekStart);
-    const cellKey = `${person.id}_${dateKey}`;
+    const cellKey = cleanFirebaseKey(`${person.id}_${dateKey}`);
     const workData = planningData[weekKey] ? planningData[weekKey][cellKey] : null;
 
     document.getElementById('clientName').value = workData?.client || '';
@@ -309,7 +313,7 @@ function saveWorkInfo() {
         if (document.getElementById(id).checked) {
             const date = new Date(currentWeekStart);
             date.setDate(date.getDate() + dayOffset);
-            const cellKey = `${currentWorkCell.person.id}_${formatDate(date)}`;
+            const cellKey = cleanFirebaseKey(`${currentWorkCell.person.id}_${formatDate(date)}`);
             planningData[weekKey][cellKey] = { client, site };
         }
     });
@@ -321,7 +325,7 @@ function saveWorkInfo() {
 function deleteCurrentDay() {
     if (!currentWorkCell || !db) return;
     const weekKey = getWeekKey(currentWeekStart);
-    const cellKey = `${currentWorkCell.person.id}_${currentWorkCell.dateKey}`;
+    const cellKey = cleanFirebaseKey(`${currentWorkCell.person.id}_${currentWorkCell.dateKey}`);
     delete planningData[weekKey][cellKey];
     db.ref('planning').set(planningData);
     closeWorkModal();
@@ -342,7 +346,7 @@ function deleteAllSelectedDays() {
         if (document.getElementById(id).checked) {
             const date = new Date(currentWeekStart);
             date.setDate(date.getDate() + dayOffset);
-            const cellKey = `${currentWorkCell.person.id}_${formatDate(date)}`;
+            const cellKey = cleanFirebaseKey(`${currentWorkCell.person.id}_${formatDate(date)}`);
             delete planningData[weekKey][cellKey];
         }
     });
@@ -623,4 +627,4 @@ document.addEventListener('wheel', e => {
 initYearSelector();
 if (initFirebase()) {
     generatePlanning();
-  }
+}
