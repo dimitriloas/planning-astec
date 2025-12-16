@@ -509,8 +509,26 @@ function addPersonnelRow() {
         return;
     }
 
-    displayedPersonnel[weekKey].push(allPeople[0]);
+    const personToAdd = allPeople[0];
+    
+    // Ajouter le personnel à toutes les semaines de l'année en cours
+    for (let weekNum = 1; weekNum <= 53; weekNum++) {
+        const weekDate = getDateFromWeekNumber(currentYear, weekNum);
+        const key = getWeekKey(weekDate);
+        
+        if (!displayedPersonnel[key]) {
+            displayedPersonnel[key] = [];
+        }
+        
+        // Vérifier si le personnel n'est pas déjà présent dans cette semaine
+        const alreadyInWeek = displayedPersonnel[key].find(p => p.id === personToAdd.id);
+        if (!alreadyInWeek) {
+            displayedPersonnel[key].push(personToAdd);
+        }
+    }
+    
     db.ref('displayed').set(displayedPersonnel);
+    alert(`${personToAdd.name} a été ajouté(e) à toutes les semaines de ${currentYear}`);
 }
 
 function previousWeek() {
