@@ -9,468 +9,218 @@ let vacationPeriods = [];
 let currentWorkCell = null;
 
 const holidays = {
-    2024: [{date: '2024-01-01', name: 'Nouvel An'}, {date: '2024-04-01', name: 'Lundi de Pâques'}, {date: '2024-05-01', name: 'Fête du Travail'}, {date: '2024-05-08', name: 'Victoire 1945'}, {date: '2024-05-09', name: 'Ascension'}, {date: '2024-05-20', name: 'Lundi de Pentecôte'}, {date: '2024-07-14', name: 'Fête Nationale'}, {date: '2024-08-15', name: 'Assomption'}, {date: '2024-11-01', name: 'Toussaint'}, {date: '2024-11-11', name: 'Armistice 1918'}, {date: '2024-12-25', name: 'Noël'}],
-    2025: [{date: '2025-01-01', name: 'Nouvel An'}, {date: '2025-04-21', name: 'Lundi de Pâques'}, {date: '2025-05-01', name: 'Fête du Travail'}, {date: '2025-05-08', name: 'Victoire 1945'}, {date: '2025-05-29', name: 'Ascension'}, {date: '2025-06-09', name: 'Lundi de Pentecôte'}, {date: '2025-07-14', name: 'Fête Nationale'}, {date: '2025-08-15', name: 'Assomption'}, {date: '2025-11-01', name: 'Toussaint'}, {date: '2025-11-11', name: 'Armistice 1918'}, {date: '2025-12-25', name: 'Noël'}],
-    2026: [{date: '2026-01-01', name: 'Nouvel An'}, {date: '2026-04-06', name: 'Lundi de Pâques'}, {date: '2026-05-01', name: 'Fête du Travail'}, {date: '2026-05-08', name: 'Victoire 1945'}, {date: '2026-05-14', name: 'Ascension'}, {date: '2026-05-25', name: 'Lundi de Pentecôte'}, {date: '2026-07-14', name: 'Fête Nationale'}, {date: '2026-08-15', name: 'Assomption'}, {date: '2026-11-01', name: 'Toussaint'}, {date: '2026-11-11', name: 'Armistice 1918'}, {date: '2026-12-25', name: 'Noël'}]
+    2024: [{date: '2024-01-01', name: 'Nouvel An'}, {date: '2024-04-01', name: 'Pâques'}, {date: '2024-05-01', name: 'Travail'}, {date: '2024-05-08', name: '8 Mai'}, {date: '2024-05-09', name: 'Ascension'}, {date: '2024-05-20', name: 'Pentecôte'}, {date: '2024-07-14', name: 'Fête Nat.'}, {date: '2024-08-15', name: 'Assomption'}, {date: '2024-11-01', name: 'Toussaint'}, {date: '2024-11-11', name: 'Armistice'}, {date: '2024-12-25', name: 'Noël'}],
+    2025: [{date: '2025-01-01', name: 'Nouvel An'}, {date: '2025-04-21', name: 'Pâques'}, {date: '2025-05-01', name: 'Travail'}, {date: '2025-05-08', name: '8 Mai'}, {date: '2025-05-29', name: 'Ascension'}, {date: '2025-06-09', name: 'Pentecôte'}, {date: '2025-07-14', name: 'Fête Nat.'}, {date: '2025-08-15', name: 'Assomption'}, {date: '2025-11-01', name: 'Toussaint'}, {date: '2025-11-11', name: 'Armistice'}, {date: '2025-12-25', name: 'Noël'}]
 };
 
-// --- LOGIQUE AUTHENTIFICATION ---
-
+// --- AUTH & FIREBASE ---
 function handleLogin() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    const errorDiv = document.getElementById('authError');
-    if(errorDiv) errorDiv.style.display = 'none';
-
-    firebase.auth().signInWithEmailAndPassword(email, password)
-        .catch((error) => {
-            if(errorDiv) {
-                errorDiv.style.display = 'block';
-                errorDiv.textContent = "Erreur de connexion : " + error.message;
-            } else {
-                alert("Erreur de connexion : " + error.message);
-            }
-        });
-}
-
-function handleLogout() {
-    firebase.auth().signOut().then(() => {
-        location.reload();
+    const e = document.getElementById('loginEmail').value;
+    const p = document.getElementById('loginPassword').value;
+    firebase.auth().signInWithEmailAndPassword(e, p).catch(err => {
+        const errorDiv = document.getElementById('authError');
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = err.message;
     });
 }
 
-function setupAuthListener() {
-    firebase.auth().onAuthStateChanged((user) => {
-        const authContainer = document.getElementById('authContainer');
-        const syncStatus = document.getElementById('syncStatus');
+function handleLogout() { firebase.auth().signOut().then(() => location.reload()); }
+
+function initFirebase() {
+    const config = JSON.parse(localStorage.getItem('firebase_config'));
+    if (!config) { document.getElementById('setupBanner').style.display = 'block'; return; }
+    if (!firebase.apps.length) firebase.initializeApp(config);
+    db = firebase.database();
+    firebase.auth().onAuthStateChanged(user => {
         if (user) {
-            if(authContainer) authContainer.style.display = 'none';
-            if(syncStatus) {
-                syncStatus.textContent = '✓ Connecté : ' + user.email;
-                syncStatus.className = 'sync-status online';
-            }
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('syncStatus').textContent = "✓ Connecté";
+            document.getElementById('syncStatus').className = "sync-status online";
             setupFirebaseListeners();
         } else {
-            if(authContainer) authContainer.style.display = 'flex';
-            if(syncStatus) {
-                syncStatus.textContent = '🔒 Accès restreint';
-                syncStatus.className = 'sync-status offline';
-            }
+            document.getElementById('authContainer').style.display = 'flex';
         }
     });
 }
 
-// --- INITIALISATION & FIREBASE ---
-
-function initFirebase() {
-    const savedConfig = localStorage.getItem('firebase_config');
-    const setupBanner = document.getElementById('setupBanner');
-    if (!savedConfig) {
-        if(setupBanner) setupBanner.style.display = 'block';
-        return false;
-    }
-    try {
-        const config = JSON.parse(savedConfig);
-        if (!firebase.apps.length) firebase.initializeApp(config);
-        db = firebase.database();
-        if(setupBanner) setupBanner.style.display = 'none';
-        setupAuthListener();
-        return true;
-    } catch (e) {
-        return false;
-    }
-}
-
 function saveFirebaseConfig() {
-    const configStr = document.getElementById('firebaseConfig').value;
-    try {
-        const config = JSON.parse(configStr.includes('const firebaseConfig =') ? 
-            configStr.split('=')[1].trim().replace(';', '') : configStr);
-        localStorage.setItem('firebase_config', JSON.stringify(config));
-        location.reload();
-    } catch (e) {
-        alert('Format de configuration invalide');
-    }
+    localStorage.setItem('firebase_config', document.getElementById('firebaseConfig').value);
+    location.reload();
 }
 
 function setupFirebaseListeners() {
-    if (!db) return;
-    db.ref('personnel').on('value', snap => {
-        allPersonnel = snap.exists() ? snap.val() : { atelier: [], chargeaffaire: [], bureau: [] };
-        if (currentTeam) updatePersonnelList();
-        generatePlanning();
-    });
-    db.ref('planning').on('value', snap => {
-        planningData = snap.exists() ? snap.val() : {};
-        generatePlanning();
-    });
-    db.ref('displayed').on('value', snap => {
-        displayedPersonnel = snap.exists() ? snap.val() : {};
-        generatePlanning();
-    });
-    db.ref('vacations').on('value', snap => {
-        vacationPeriods = snap.exists() ? snap.val() : [];
-        if (document.getElementById('vacationModal').style.display === 'block') updateVacationList();
-        generatePlanning();
-    });
+    db.ref('personnel').on('value', snap => { allPersonnel = snap.val() || { atelier:[], chargeaffaire:[], bureau:[] }; generatePlanning(); });
+    db.ref('planning').on('value', snap => { planningData = snap.val() || {}; generatePlanning(); });
+    db.ref('displayed').on('value', snap => { displayedPersonnel = snap.val() || {}; generatePlanning(); });
+    db.ref('vacations').on('value', snap => { vacationPeriods = snap.val() || []; generatePlanning(); });
 }
 
-// --- LOGIQUE METIER ---
-
+// --- DATES ---
 function getMonday(d) {
     d = new Date(d);
-    let day = d.getDay();
-    let diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    let day = d.getDay(), diff = d.getDate() - day + (day === 0 ? -6 : 1);
     return new Date(d.setDate(diff));
 }
 
 function getWeekNumber(d) {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-    let yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return Math.ceil((((d - new Date(Date.UTC(d.getUTCFullYear(), 0, 1))) / 86400000) + 1) / 7);
 }
 
-function getDateFromWeekNumber(year, week) {
-    let simple = new Date(year, 0, 1 + (week - 1) * 7);
-    let dow = simple.getDay();
-    let ISOweekStart = simple;
-    if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
-    else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
-    return ISOweekStart;
+function getDateFromWeekNumber(y, w) {
+    let d = new Date(y, 0, 4);
+    return getMonday(new Date(d.setDate(d.getDate() + (w - 1) * 7)));
 }
 
-function initYearSelector() {
-    const selector = document.getElementById('yearSelect');
-    if(!selector) return;
-    const years = [2024, 2025, 2026];
-    selector.innerHTML = '';
-    years.forEach(year => {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        if (year === currentYear) option.selected = true;
-        selector.appendChild(option);
-    });
-    selector.onchange = (e) => {
-        currentYear = parseInt(e.target.value);
-        currentWeekStart = getDateFromWeekNumber(currentYear, getWeekNumber(currentWeekStart));
-        generatePlanning();
-    };
-}
-
-function goToWeek() {
-    const weekInput = document.getElementById('weekNumber');
-    if(!weekInput) return;
-    const weekNum = parseInt(weekInput.value);
-    if (weekNum >= 1 && weekNum <= 53) {
-        currentWeekStart = getDateFromWeekNumber(currentYear, weekNum);
-        generatePlanning();
-    }
-}
-
-function nextWeek() {
-    currentWeekStart.setDate(currentWeekStart.getDate() + 7);
-    if (currentWeekStart.getFullYear() > currentYear) currentYear = currentWeekStart.getFullYear();
-    generatePlanning();
-}
-
-function previousWeek() {
-    currentWeekStart.setDate(currentWeekStart.getDate() - 7);
-    if (currentWeekStart.getFullYear() < currentYear) currentYear = currentWeekStart.getFullYear();
-    generatePlanning();
-}
-
-function isHoliday(date) {
-    const dateStr = date.toISOString().split('T')[0];
-    return holidays[currentYear]?.find(h => h.date === dateStr);
-}
-
-function getVacationType(personName, date) {
-    const dateStr = date.toISOString().split('T')[0];
-    return vacationPeriods.find(v => 
-        v.personnel === personName && 
-        dateStr >= v.start && 
-        dateStr <= v.end
-    );
-}
-
+// --- RENDU ---
 function generatePlanning() {
     const weekNum = getWeekNumber(currentWeekStart);
-    const weekInput = document.getElementById('weekNumber');
-    if(weekInput) weekInput.value = weekNum;
-    
-    const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
-    const header = document.getElementById('tableHeader');
-    if(!header) return;
-    header.innerHTML = '<th>Personnel</th>';
-    
-    const weekDates = [];
-    for (let i = 0; i < 5; i++) {
-        const date = new Date(currentWeekStart);
-        date.setDate(date.getDate() + i);
-        weekDates.push(date);
-        const holiday = isHoliday(date);
-        header.innerHTML += `<th class="${holiday ? 'holiday' : ''}">${days[i]}<br>${date.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'})}${holiday ? '<br>'+holiday.name : ''}</th>`;
-    }
-    header.innerHTML += '<th class="no-print">Action</th>';
-
     const weekKey = `${currentYear}-W${weekNum}`;
-    const weekPersonnel = displayedPersonnel[weekKey] || [];
+    document.getElementById('weekNumber').value = weekNum;
+
+    const header = document.getElementById('tableHeader');
+    header.innerHTML = '<th>Personnel</th>';
+    const dates = [];
+    for(let i=0; i<5; i++){
+        let d = new Date(currentWeekStart); d.setDate(d.getDate()+i);
+        let dStr = d.toISOString().split('T')[0]; dates.push(dStr);
+        let hol = holidays[currentYear]?.find(h => h.date === dStr);
+        header.innerHTML += `<th class="${hol?'holiday':''}">${['Lun','Mar','Mer','Jeu','Ven'][i]} ${d.getDate()}/${d.getMonth()+1}${hol?'<br>'+hol.name:''}</th>`;
+    }
+
     const body = document.getElementById('tableBody');
-    if(!body) return;
     body.innerHTML = '';
+    // Utilise une liste persistante si disponible, sinon la liste de la semaine
+    const list = displayedPersonnel['permanent'] || displayedPersonnel[weekKey] || [];
 
-    weekPersonnel.forEach((person, rowIndex) => {
-        const tr = document.createElement('tr');
-        const isStagiaire = (allPersonnel.atelier.find(p => p.name === person)?.stagiaire) || 
-                          (allPersonnel.chargeaffaire.find(p => p.name === person)?.stagiaire) || 
-                          (allPersonnel.bureau.find(p => p.name === person)?.stagiaire);
-        
-        let typeClass = '';
-        if (allPersonnel.atelier.find(p => p.name === person)) typeClass = 'personnel-atelier';
-        else if (allPersonnel.chargeaffaire.find(p => p.name === person)) typeClass = 'personnel-chargeaffaire';
-        else if (allPersonnel.bureau.find(p => p.name === person)) typeClass = 'personnel-bureau';
-
-        tr.innerHTML = `<td class="personnel-cell ${typeClass} ${isStagiaire ? 'stagiaire' : ''}">${person}</td>`;
-
-        weekDates.forEach((date, dayIndex) => {
-            const dateStr = date.toISOString().split('T')[0];
-            const holiday = isHoliday(date);
-            const vacation = getVacationType(person, date);
-            
-            let cellContent = '';
-            let cellClass = 'work-cell';
-            if (holiday) cellClass += ' holiday';
-            else if (vacation) {
-                cellClass += vacation.isArret ? ' arret-travail' : ' vacation';
-                cellContent = vacation.isArret ? 'ARRÊT TRAVAIL' : 'CONGÉS';
-            } else {
-                const work = planningData[`${weekKey}-${person}-${dayIndex}`];
-                if (work) {
-                    cellContent = `<div class="work-info"><strong>${work.client}</strong>${work.site}</div>`;
-                }
-            }
-
-            tr.innerHTML += `<td class="${cellClass}" onclick="${holiday ? 'null' : `openWorkModal('${person}', ${dayIndex}, '${dateStr}')`}">${cellContent}</td>`;
+    list.forEach((name, idx) => {
+        let tr = document.createElement('tr');
+        let typeClass = '', isStag = false;
+        ['atelier','chargeaffaire','bureau'].forEach(t => { 
+            let p = allPersonnel[t]?.find(x => x.name === name); 
+            if(p){ typeClass='personnel-'+t; isStag=p.stagiaire; } 
         });
 
-        tr.innerHTML += `<td class="no-print"><button class="delete-row-btn" onclick="removePersonnelRow(${rowIndex})">×</button></td>`;
+        tr.innerHTML = `<td class="personnel-cell ${typeClass} ${isStag?'stagiaire':''}">
+            ${name} <button class="delete-row-btn no-print" onclick="removePersonnelRow(${idx})">×</button>
+        </td>`;
+
+        dates.forEach((dStr, dIdx) => {
+            let hol = holidays[currentYear]?.find(h => h.date === dStr);
+            let vac = vacationPeriods.find(v => v.personnel === name && dStr >= v.start && dStr <= v.end);
+            let cl = 'work-cell', txt = '';
+            if(hol){ cl += ' holiday'; txt = hol.name; }
+            else if(vac){ cl += vac.isArret ? ' arret-travail' : ' vacation'; txt = vac.isArret ? 'ARRÊT' : 'CONGÉS'; }
+            else {
+                let w = planningData[`${weekKey}-${name}-${dIdx}`];
+                if(w) txt = `<strong>${w.client}</strong><br>${w.site}`;
+            }
+            tr.innerHTML += `<td class="${cl}" onclick="openWorkModal('${name}', ${dIdx}, '${dStr}')">${txt}</td>`;
+        });
         body.appendChild(tr);
     });
 
-    const start = new Date(currentWeekStart);
-    const end = new Date(currentWeekStart);
-    end.setDate(end.getDate() + 4);
-    const weekInfo = document.getElementById('weekInfo');
-    if(weekInfo) weekInfo.innerHTML = `Du ${start.toLocaleDateString()} au ${end.toLocaleDateString()}<span class="week-number">Semaine ${weekNum}</span>`;
+    let end = new Date(currentWeekStart); end.setDate(end.getDate()+4);
+    document.getElementById('weekInfo').textContent = `Du ${currentWeekStart.toLocaleDateString()} au ${end.toLocaleDateString()}`;
 }
 
-// --- MODALES ---
-
-function openTeamModal(team) {
-    currentTeam = team;
-    const title = document.getElementById('modalTitle');
-    if(title) title.textContent = `Gérer le Personnel ${team.charAt(0).toUpperCase() + team.slice(1)}`;
-    updatePersonnelList();
-    const modal = document.getElementById('teamModal');
-    if(modal) modal.style.display = 'block';
-}
-
-function closeModal() { document.getElementById('teamModal').style.display = 'none'; }
+// --- ACTIONS ---
+function openTeamModal(t) { currentTeam = t; document.getElementById('modalTitle').textContent = "Liste " + t.toUpperCase(); updatePersonnelList(); document.getElementById('teamModal').style.display='block'; }
+function closeModal() { document.getElementById('teamModal').style.display='none'; }
 
 function updatePersonnelList() {
     const list = document.getElementById('personnelList');
-    if(!list) return;
-    list.innerHTML = '';
-    allPersonnel[currentTeam].forEach((p, index) => {
-        const div = document.createElement('div');
-        div.className = 'personnel-item';
-        div.innerHTML = `<h4>${p.name} ${p.stagiaire ? '(Stagiaire)' : ''}</h4>
-            <button class="btn btn-primary" onclick="addToPlanning('${p.name}')">Ajouter au planning cette semaine</button>
-            <button class="btn btn-danger" onclick="deletePersonnel(${index})">Supprimer de la liste</button>`;
-        list.appendChild(div);
-    });
+    list.innerHTML = (allPersonnel[currentTeam] || []).map((p, i) => `
+        <div class="personnel-item">
+            <span>${p.name}</span>
+            <button class="btn btn-primary" onclick="addToPlanning('${p.name}')">Afficher</button>
+            <button class="btn btn-danger" onclick="deletePersonnel(${i})">Supprimer</button>
+        </div>
+    `).join('');
 }
 
 function addPersonnel() {
-    const name = document.getElementById('personnelName').value.trim();
-    const stagiaire = document.getElementById('stagiaire').checked;
-    if (name && !allPersonnel[currentTeam].find(p => p.name === name)) {
-        allPersonnel[currentTeam].push({ name, stagiaire });
-        db.ref('personnel').set(allPersonnel);
-        document.getElementById('personnelName').value = '';
-        document.getElementById('stagiaire').checked = false;
-    }
+    const n = document.getElementById('personnelName').value;
+    if(!allPersonnel[currentTeam]) allPersonnel[currentTeam] = [];
+    allPersonnel[currentTeam].push({name: n, stagiaire: document.getElementById('stagiaire').checked});
+    db.ref('personnel').set(allPersonnel);
 }
 
-function deletePersonnel(index) {
-    if (confirm('Supprimer ce personnel de la liste ?')) {
-        allPersonnel[currentTeam].splice(index, 1);
-        db.ref('personnel').set(allPersonnel);
-    }
-}
+function deletePersonnel(i) { allPersonnel[currentTeam].splice(i,1); db.ref('personnel').set(allPersonnel); }
 
 function addToPlanning(name) {
-    const weekKey = `${currentYear}-W${getWeekNumber(currentWeekStart)}`;
-    if (!displayedPersonnel[weekKey]) displayedPersonnel[weekKey] = [];
-    if (!displayedPersonnel[weekKey].includes(name)) {
-        displayedPersonnel[weekKey].push(name);
-        db.ref('displayed').set(displayedPersonnel);
+    if(!displayedPersonnel['permanent']) displayedPersonnel['permanent'] = [];
+    if(!displayedPersonnel['permanent'].includes(name)) {
+        displayedPersonnel['permanent'].push(name);
+        db.ref('displayed/permanent').set(displayedPersonnel['permanent']);
     }
 }
 
-function removePersonnelRow(index) {
-    const weekKey = `${currentYear}-W${getWeekNumber(currentWeekStart)}`;
-    displayedPersonnel[weekKey].splice(index, 1);
-    db.ref('displayed').set(displayedPersonnel);
+function removePersonnelRow(i) {
+    displayedPersonnel['permanent'].splice(i,1);
+    db.ref('displayed/permanent').set(displayedPersonnel['permanent']);
 }
 
 function addPersonnelRow() {
-    const name = prompt("Entrez le nom du personnel :");
-    if (name) addToPlanning(name);
+    let n = prompt("Nom du personnel :");
+    if(n) addToPlanning(n);
 }
 
-function openWorkModal(person, dayIndex, dateStr) {
-    if (!db) return;
-    const weekKey = `${currentYear}-W${getWeekNumber(currentWeekStart)}`;
-    currentWorkCell = { person, dayIndex, weekKey };
-    const work = planningData[`${weekKey}-${person}-${dayIndex}`] || { client: '', site: '' };
-    document.getElementById('clientName').value = work.client;
-    document.getElementById('siteName').value = work.site;
-    document.getElementById('deleteOptions').style.display = planningData[`${weekKey}-${person}-${dayIndex}`] ? 'block' : 'none';
-    
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-    days.forEach((day, i) => {
-        const check = document.getElementById(`apply${day}`);
-        if(check) check.checked = (i === dayIndex);
-    });
-    
-    document.getElementById('workModal').style.display = 'block';
-}
-
-function closeWorkModal() { document.getElementById('workModal').style.display = 'none'; }
-
-function saveWorkInfo() {
-    const client = document.getElementById('clientName').value.trim();
-    const site = document.getElementById('siteName').value.trim();
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-    
-    days.forEach((day, i) => {
-        const check = document.getElementById(`apply${day}`);
-        if (check && check.checked) {
-            const key = `${currentWorkCell.weekKey}-${currentWorkCell.person}-${i}`;
-            if (client || site) planningData[key] = { client, site };
-            else delete planningData[key];
-        }
-    });
-    db.ref('planning').set(planningData);
-    closeWorkModal();
-}
-
-function deleteCurrentDay() {
-    const key = `${currentWorkCell.weekKey}-${currentWorkCell.person}-${currentWorkCell.dayIndex}`;
-    delete planningData[key];
-    db.ref('planning').set(planningData);
-    closeWorkModal();
-}
-
-function deleteAllSelectedDays() {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-    days.forEach((day, i) => {
-        const check = document.getElementById(`apply${day}`);
-        if (check && check.checked) {
-            delete planningData[`${currentWorkCell.weekKey}-${currentWorkCell.person}-${i}`];
-        }
-    });
-    db.ref('planning').set(planningData);
-    closeWorkModal();
-}
-
+// --- CONGES ---
 function openVacationModal() {
-    const select = document.getElementById('vacationPersonnelSelect');
-    if(!select) return;
-    select.innerHTML = '';
-    [...allPersonnel.atelier, ...allPersonnel.chargeaffaire, ...allPersonnel.bureau]
-        .sort((a,b) => a.name.localeCompare(b.name))
-        .forEach(p => select.innerHTML += `<option value="${p.name}">${p.name}</option>`);
+    const sel = document.getElementById('vacationPersonnelSelect');
+    let all = [...allPersonnel.atelier, ...allPersonnel.chargeaffaire, ...allPersonnel.bureau];
+    sel.innerHTML = all.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
     updateVacationList();
-    document.getElementById('vacationModal').style.display = 'block';
+    document.getElementById('vacationModal').style.display='block';
 }
-
-function closeVacationModal() { document.getElementById('vacationModal').style.display = 'none'; }
 
 function addVacationPeriod() {
-    const personnel = document.getElementById('vacationPersonnelSelect').value;
-    const start = document.getElementById('vacationStartDate').value;
-    const end = document.getElementById('vacationEndDate').value;
-    const isArret = document.getElementById('arretTravail').checked;
-    if (personnel && start && end) {
-        vacationPeriods.push({ personnel, start, end, isArret });
-        db.ref('vacations').set(vacationPeriods);
-    }
-}
-
-function updateVacationList() {
-    const list = document.getElementById('vacationList');
-    if(!list) return;
-    list.innerHTML = '';
-    vacationPeriods.forEach((v, index) => {
-        const div = document.createElement('div');
-        div.className = 'personnel-item';
-        div.innerHTML = `<strong>${v.personnel}</strong><br>${v.isArret ? 'ARRÊT' : 'CONGÉS'} : du ${v.start} au ${v.end}
-            <button class="btn btn-warning" onclick="removeVacation(${index})">Supprimer</button>`;
-        list.appendChild(div);
+    vacationPeriods.push({
+        personnel: document.getElementById('vacationPersonnelSelect').value,
+        start: document.getElementById('vacationStartDate').value,
+        end: document.getElementById('vacationEndDate').value,
+        isArret: document.getElementById('arretTravail').checked
     });
-}
-
-function removeVacation(index) {
-    vacationPeriods.splice(index, 1);
     db.ref('vacations').set(vacationPeriods);
 }
 
-function printPlanning() { window.print(); }
-
-// --- LISTENERS ET INITIALISATION ---
-
-window.onclick = e => {
-    if (e.target.id === 'teamModal') closeModal();
-    if (e.target.id === 'vacationModal') closeVacationModal();
-    if (e.target.id === 'workModal') closeWorkModal();
+function updateVacationList() {
+    document.getElementById('vacationList').innerHTML = vacationPeriods.map((v, i) => `
+        <div class="personnel-item">${v.personnel} (${v.start} au ${v.end}) <button onclick="vacationPeriods.splice(${i},1); db.ref('vacations').set(vacationPeriods);">×</button></div>
+    `).join('');
 }
 
-// Gestion du champ de saisie directe (Touche Entrée)
-const weekInput = document.getElementById('weekNumber');
-if (weekInput) {
-    weekInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            goToWeek();
-        }
+function closeVacationModal() { document.getElementById('vacationModal').style.display='none'; }
+
+// --- TRAVAIL ---
+function openWorkModal(name, dIdx, dStr) {
+    currentWorkCell = { name, dIdx, weekKey: `${currentYear}-W${getWeekNumber(currentWeekStart)}` };
+    let w = planningData[`${currentWorkCell.weekKey}-${name}-${dIdx}`] || {client:'', site:''};
+    document.getElementById('clientName').value = w.client;
+    document.getElementById('siteName').value = w.site;
+    ['Monday','Tuesday','Wednesday','Thursday','Friday'].forEach((d, i) => document.getElementById('apply'+d).checked = (i === dIdx));
+    document.getElementById('workModal').style.display='block';
+}
+
+function saveWorkInfo() {
+    const c = document.getElementById('clientName').value;
+    const s = document.getElementById('siteName').value;
+    ['Monday','Tuesday','Wednesday','Thursday','Friday'].forEach((d, i) => {
+        if(document.getElementById('apply'+d).checked) db.ref(`planning/${currentWorkCell.weekKey}-${currentWorkCell.name}-${i}`).set({client:c, site:s});
     });
+    closeWorkModal();
 }
 
-// Gestion du défilement
-let wheelTimeout = null;
-document.addEventListener('wheel', e => {
-    const input = document.getElementById('weekNumber');
-    if (e.target.id === 'weekNumber') {
-        e.preventDefault();
-        let currentValue = parseInt(input.value) || getWeekNumber(currentWeekStart);
-        if (e.deltaY < 0) currentValue = Math.min(53, currentValue + 1);
-        else currentValue = Math.max(1, currentValue - 1);
-        input.value = currentValue;
-        currentWeekStart = getDateFromWeekNumber(currentYear, currentValue);
-        generatePlanning();
-        return;
-    }
-    
-    if (e.target.closest('.modal') || ['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
-    if (wheelTimeout) return;
-    wheelTimeout = setTimeout(() => wheelTimeout = null, 300);
-    if (e.deltaY > 0) nextWeek();
-    else previousWeek();
-}, { passive: false });
+function deleteCurrentDay() { db.ref(`planning/${currentWorkCell.weekKey}-${currentWorkCell.name}-${currentWorkCell.dIdx}`).remove(); closeWorkModal(); }
+function closeWorkModal() { document.getElementById('workModal').style.display='none'; }
 
-// Lancement
-initYearSelector();
+// --- LISTENERS ---
+function nextWeek() { currentWeekStart.setDate(currentWeekStart.getDate()+7); generatePlanning(); }
+function previousWeek() { currentWeekStart.setDate(currentWeekStart.getDate()-7); generatePlanning(); }
+function goToWeek() { currentWeekStart = getDateFromWeekNumber(currentYear, document.getElementById('weekNumber').value); generatePlanning(); }
+
+document.getElementById('weekNumber').addEventListener('keydown', e => { if(e.key === 'Enter') goToWeek(); });
+
 initFirebase();
