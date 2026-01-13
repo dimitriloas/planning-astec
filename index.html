@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PLANNING ASTEC-SUD-OUEST</title>
+    <title>PLANNING HEBDOMADAIRE ASTEC-SUD-OUEST</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
@@ -13,36 +13,39 @@
         #authContainer { display: flex; position: fixed; inset: 0; background: #f5f5f5; z-index: 9999; align-items: center; justify-content: center; }
         .auth-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
 
-        /* TYPOLOGIE PERSONNEL & COULEURS */
+        /* COULEURS MÉTIERS */
         .personnel-atelier { background-color: #e3f2fd !important; color: #1565c0; font-weight: bold; }
         .personnel-chargeaffaire { background-color: #e8f5e9 !important; color: #2e7d32; font-weight: bold; }
         .personnel-bureau { background-color: #fff3e0 !important; color: #ef6c00; font-weight: bold; }
         .stagiaire { background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px) !important; }
 
-        /* ETATS CELLULES */
+        /* ÉTATS ABSENCES */
         .holiday { background-color: #ffebee !important; color: #c62828; font-weight: bold; }
         .vacation { background-color: #fff9c4 !important; color: #f9a825; font-weight: bold; }
         .arret-travail { background: repeating-linear-gradient(45deg, #fff9c4, #fff9c4 10px, #fbc02d 10px, #fbc02d 20px) !important; color: #d84315; font-weight: bold; }
 
+        /* LÉGENDE */
+        .legend { display: flex; gap: 15px; margin: 15px 0; padding: 12px; background: #f9f9f9; border-radius: 4px; border: 1px solid #ddd; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.9em; }
+        .legend-box { width: 20px; height: 15px; border: 1px solid #999; }
+
         /* TABLEAU */
         .planning-table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
-        .planning-table th, .planning-table td { border: 1px solid #ddd; padding: 8px; text-align: center; vertical-align: middle; word-wrap: break-word; }
-        .planning-table th { background: #9C27B0; color: white; font-size: 0.9em; }
-        .work-cell { cursor: pointer; min-height: 70px; font-size: 0.85em; }
-
-        /* NOM + CROIX DE SUPPRESSION */
-        .name-cell { position: relative; text-align: left !important; padding-left: 10px !important; padding-right: 30px !important; }
-        .btn-delete-row { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: #ff5252; color: white; border: none; border-radius: 4px; width: 20px; height: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .planning-table th, .planning-table td { border: 1px solid #ddd; padding: 10px; text-align: center; vertical-align: middle; }
+        .planning-table th { background: #9C27B0; color: white; }
+        
+        /* CELLULE NOM ET CROIX DIRECTE */
+        .name-cell { position: relative; text-align: left !important; padding-left: 10px !important; padding-right: 35px !important; }
+        .btn-delete-row { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: #ff5252; color: white; border: none; border-radius: 4px; width: 22px; height: 22px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
 
         /* MODALES */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 50px auto; padding: 30px; width: 90%; max-width: 600px; border-radius: 8px; max-height: 80vh; overflow-y: auto; }
+        .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 50px auto; padding: 30px; width: 90%; max-width: 600px; border-radius: 8px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
         
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; transition: opacity 0.2s; }
-        .btn:hover { opacity: 0.8; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
         .btn-success { background: #4CAF50; }
         .btn-danger { background: #f44336; }
         .btn-primary { background: #9C27B0; }
@@ -53,80 +56,89 @@
 <body>
     <div id="authContainer">
         <div class="auth-card">
-            <h2 style="text-align: center; margin-bottom: 20px; color: #9C27B0;">Accès Planning</h2>
+            <h2 style="text-align: center; margin-bottom: 20px;">Connexion</h2>
             <div class="form-group"><label>Email</label><input type="email" id="loginEmail"></div>
             <div class="form-group"><label>Mot de passe</label><input type="password" id="loginPassword"></div>
-            <button class="btn btn-primary" style="width: 100%;" onclick="handleLogin()">Se connecter</button>
+            <button class="btn btn-primary" style="width: 100%" onclick="handleLogin()">Accéder au planning</button>
         </div>
     </div>
 
     <div class="container">
-        <div class="header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
             <h1>Planning Astec-sud-ouest</h1>
-            <div class="no-print">
-                <button class="btn btn-danger" onclick="handleLogout()">Déconnexion</button>
-            </div>
+            <button class="btn btn-danger no-print" onclick="handleLogout()">Déconnexion</button>
         </div>
 
-        <div class="no-print" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+        <div class="legend no-print">
+            <div class="legend-item"><div class="legend-box personnel-atelier"></div> Atelier</div>
+            <div class="legend-item"><div class="legend-box personnel-chargeaffaire"></div> Chargé d'affaire</div>
+            <div class="legend-item"><div class="legend-box personnel-bureau"></div> Bureau</div>
+            <div class="legend-item"><div class="legend-box stagiaire" style="background:white;"></div> Stagiaire (Hachuré)</div>
+            <div class="legend-item"><div class="legend-box vacation"></div> Congés</div>
+            <div class="legend-item"><div class="legend-box arret-travail"></div> Arrêt Maladie</div>
+        </div>
+
+        <div class="no-print" style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
             <button class="btn" style="background:#2196F3" onclick="openTeamModal('atelier')">Listes Atelier</button>
-            <button class="btn" style="background:#4CAF50" onclick="openTeamModal('chargeaffaire')">Listes Chargés d'affaire</button>
+            <button class="btn" style="background:#4CAF50" onclick="openTeamModal('chargeaffaire')">Listes CA</button>
             <button class="btn" style="background:#FF9800" onclick="openTeamModal('bureau')">Listes Bureau</button>
-            <button class="btn" style="background:#A1887F" onclick="openVacationModal()">Gérer Congés/Arrêts</button>
+            <button class="btn" style="background:#A1887F" onclick="openVacationModal()">Gestion Congés/Arrêts</button>
+            
+            <div style="flex-grow:1; display:flex; justify-content:center; align-items:center; gap:15px;">
+                <button class="btn btn-primary" onclick="previousWeek()">← Précédente</button>
+                <div style="text-align:center;">
+                    <label style="font-size: 0.7em; font-weight: bold; display: block;">N° SEMAINE (Entrée pour valider)</label>
+                    <input type="number" id="weekNumberInput" min="1" max="53" style="width:80px; padding:10px; text-align:center; font-weight:bold; border:2px solid #9C27B0;">
+                </div>
+                <button class="btn btn-primary" onclick="nextWeek()">Suivante →</button>
+            </div>
         </div>
 
-        <div style="display: flex; justify-content: center; gap: 20px; align-items: center;" class="no-print">
-            <button class="btn btn-primary" onclick="previousWeek()">← Semaine Précédente</button>
-            <div style="text-align: center;">
-                <input type="number" id="weekNumber" style="width: 60px; padding: 8px; text-align: center;" onchange="goToWeek()">
-                <div id="weekInfo" style="font-weight: bold; margin-top: 5px;"></div>
-            </div>
-            <button class="btn btn-primary" onclick="nextWeek()">Semaine Suivante →</button>
-        </div>
+        <h2 id="currentWeekDisplay" style="text-align:center; margin-bottom:15px;"></h2>
 
         <table class="planning-table">
             <thead><tr id="tableHeader"></tr></thead>
             <tbody id="tableBody"></tbody>
         </table>
 
-        <button class="btn btn-success no-print" onclick="openAddRowModal()" style="width: 100%; margin-top: 15px; font-size: 1.1em;">
-            + AJOUTER UNE LIGNE (Choisir dans la liste du personnel)
+        <button class="btn btn-success no-print" style="width:100%; margin-top:20px; font-size:1.2em;" onclick="openAddRowModal()">
+            + AJOUTER UNE LIGNE AU PLANNING
         </button>
     </div>
 
     <div id="teamModal" class="modal">
         <div class="modal-content">
-            <h2 id="teamModalTitle">Gestion d'équipe</h2>
+            <h2 id="teamModalTitle"></h2>
             <div class="form-group" style="margin-top:20px;">
-                <input type="text" id="newPersonnelName" placeholder="Nom du collaborateur" style="width: 60%; display: inline-block;">
-                <label style="display: inline-block; margin-left: 10px;"><input type="checkbox" id="isStagiaire"> Stagiaire</label>
+                <input type="text" id="newPersonName" placeholder="Nom Prénom" style="width:70%;">
+                <label style="margin-left:10px;"><input type="checkbox" id="isStag"> Stagiaire</label>
             </div>
-            <button class="btn btn-success" onclick="addNewPersonnel()">Ajouter à la base de données</button>
-            <div id="personnelList" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;"></div>
-            <button class="btn btn-danger" onclick="closeModal('teamModal')" style="margin-top: 20px; width: 100%;">Fermer</button>
+            <button class="btn btn-success" onclick="addNewPerson()">Ajouter à la liste</button>
+            <div id="personnelList" style="margin-top:20px; max-height:200px; overflow-y:auto;"></div>
+            <button class="btn btn-danger" onclick="closeModal('teamModal')" style="width:100%; margin-top:20px;">Fermer</button>
         </div>
     </div>
 
     <div id="addRowModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <h2>Choisir le personnel à ajouter au planning</h2>
-            <div id="selectionList" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px;"></div>
-            <button class="btn btn-danger" onclick="closeModal('addRowModal')" style="margin-top: 20px; width: 100%;">Annuler</button>
+        <div class="modal-content" style="max-width:800px;">
+            <h2>Choisir le personnel à afficher cette semaine</h2>
+            <div id="selectionList" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-top:20px;"></div>
+            <button class="btn btn-danger" onclick="closeModal('addRowModal')" style="width:100%; margin-top:20px;">Annuler</button>
         </div>
     </div>
 
     <div id="vacationModal" class="modal">
         <div class="modal-content">
-            <h2>Gestion des Congés / Arrêts</h2>
-            <div class="form-group"><label>Collaborateur</label><select id="vacationPersonnelSelect"></select></div>
-            <div class="form-group" style="display: flex; gap: 10px;">
-                <div style="flex:1;"><label>Début</label><input type="date" id="vacationStart"></div>
-                <div style="flex:1;"><label>Fin</label><input type="date" id="vacationEnd"></div>
+            <h2>Ajouter Congés ou Arrêt Maladie</h2>
+            <div class="form-group"><label>Nom</label><select id="vacationPerson"></select></div>
+            <div class="form-group" style="display:flex; gap:10px;">
+                <div style="flex:1;"><label>Du</label><input type="date" id="vacationStart"></div>
+                <div style="flex:1;"><label>Au</label><input type="date" id="vacationEnd"></div>
             </div>
-            <div class="form-group"><label><input type="checkbox" id="isMedicalLeave"> Arrêt Maladie (Jaune hachuré)</label></div>
-            <button class="btn btn-success" onclick="saveVacation()" style="width: 100%;">Ajouter la période</button>
-            <div id="activeVacationsList" style="margin-top: 20px; max-height: 200px; overflow-y: auto;"></div>
-            <button class="btn btn-danger" onclick="closeModal('vacationModal')" style="margin-top: 20px; width: 100%;">Fermer</button>
+            <div class="form-group"><label><input type="checkbox" id="isArret"> Arrêt Maladie (Hachures Jaunes)</label></div>
+            <button class="btn btn-success" style="width:100%" onclick="saveVacation()">Enregistrer l'absence</button>
+            <div id="activeVacations" style="margin-top:20px;"></div>
+            <button class="btn btn-danger" onclick="closeModal('vacationModal')" style="width:100%; margin-top:20px;">Fermer</button>
         </div>
     </div>
 
@@ -134,20 +146,20 @@
         <div class="modal-content">
             <h2 id="workModalTitle">Affectation</h2>
             <div class="form-group"><label>Client</label><input type="text" id="workClient"></div>
-            <div class="form-group"><label>Site / Affaire</label><input type="text" id="workSite"></div>
+            <div class="form-group"><label>Lieu / Site</label><input type="text" id="workSite"></div>
             <div class="form-group">
-                <label>Appliquer aux jours :</label>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <label><input type="checkbox" id="chk0"> Lun</label>
-                    <label><input type="checkbox" id="chk1"> Mar</label>
-                    <label><input type="checkbox" id="chk2"> Mer</label>
-                    <label><input type="checkbox" id="chk3"> Jeu</label>
-                    <label><input type="checkbox" id="chk4"> Ven</label>
+                <label>Copier sur les jours sélectionnés :</label>
+                <div style="display:flex; gap:8px;">
+                    <label><input type="checkbox" id="c0"> Lun</label>
+                    <label><input type="checkbox" id="c1"> Mar</label>
+                    <label><input type="checkbox" id="c2"> Mer</label>
+                    <label><input type="checkbox" id="c3"> Jeu</label>
+                    <label><input type="checkbox" id="c4"> Ven</label>
                 </div>
             </div>
-            <button class="btn btn-success" onclick="saveWork()" style="width: 100%;">Enregistrer</button>
-            <button class="btn btn-danger" onclick="deleteWork()" style="width: 100%; margin-top: 10px;">Supprimer ce jour</button>
-            <button class="btn btn-primary" onclick="closeModal('workModal')" style="width: 100%; margin-top: 10px; background: #777;">Annuler</button>
+            <button class="btn btn-success" style="width:100%" onclick="saveWork()">Valider</button>
+            <button class="btn btn-danger" style="width:100%; margin-top:10px;" onclick="deleteDay()">Effacer ce jour</button>
+            <button class="btn" style="width:100%; margin-top:10px; background:#999;" onclick="closeModal('workModal')">Annuler</button>
         </div>
     </div>
 
