@@ -8,6 +8,12 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
         .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        /* --- NOUVEAUX STYLES AUTH --- */
+        #authContainer { display: flex; position: fixed; inset: 0; background: #f5f5f5; z-index: 9999; align-items: center; justify-content: center; }
+        .auth-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        /* ---------------------------- */
+
         .setup-banner { background: #FFF3E0; border: 2px solid #FF9800; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
         .setup-banner h3 { color: #E65100; margin-bottom: 10px; }
         .setup-banner input, .setup-banner button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
@@ -88,11 +94,28 @@
         .add-personnel-btn { margin-top: 10px; width: 100%; }
         .delete-options { margin-top: 15px; padding: 15px; background: #fff3e0; border-radius: 4px; border: 1px solid #ff9800; }
         .delete-options h4 { margin-bottom: 10px; color: #f57c00; }
-        @media print { .setup-banner, .sync-status, .team-buttons, .week-navigation, .btn-print, .no-print, .delete-row-btn { display: none !important; } }
+        @media print { .setup-banner, .sync-status, .team-buttons, .week-navigation, .btn-print, .no-print, .delete-row-btn, #authContainer { display: none !important; } }
     </style>
 </head>
 <body>
+    <div id="authContainer">
+        <div class="auth-card">
+            <h2 style="margin-bottom: 20px; text-align: center; color: #9C27B0;">Connexion Planning</h2>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="votre@email.com">
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="loginPassword" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleLogin()">Se connecter</button>
+            <p id="authError" style="color: #f44336; margin-top: 15px; font-size: 14px; display: none; text-align: center;"></p>
+        </div>
+    </div>
+
     <div class="sync-status connecting" id="syncStatus">Configuration requise</div>
+    
     <div class="container">
         <div class="setup-banner" id="setupBanner">
             <h3>⚙️ Configuration Firebase (Une seule fois)</h3>
@@ -100,15 +123,18 @@
             <textarea id="firebaseConfig" rows="8" style="width: 100%; padding: 10px; font-family: monospace; font-size: 12px;"></textarea>
             <button onclick="saveFirebaseConfig()">💾 Enregistrer et activer</button>
         </div>
+
         <div class="header">
             <h1>Planning Hebdomadaire Astec-sud-ouest</h1>
             <div class="logo-container">
+                <button class="btn btn-danger no-print" onclick="handleLogout()">Déconnexion</button>
                 <div style="display: flex; gap: 15px; align-items: center;">
                     <div><label for="yearSelect">Année : </label><select id="yearSelect" class="year-selector"></select></div>
                     <div><label for="weekNumber">Semaine N° : </label><input type="number" id="weekNumber" class="year-selector" style="width: 80px;" min="1" max="53" onkeypress="if(event.key==='Enter') goToWeek()"><button class="btn btn-primary" onclick="goToWeek()" style="margin-left: 5px; padding: 8px 15px;">Aller</button></div>
                 </div>
             </div>
         </div>
+
         <div class="team-buttons no-print">
             <button class="btn btn-atelier" onclick="openTeamModal('atelier')">Personnel Atelier</button>
             <button class="btn btn-success" onclick="openTeamModal('chargeaffaire')">Personnel Chargé d'affaire</button>
@@ -116,11 +142,13 @@
             <button class="btn btn-vacation" onclick="openVacationModal()">Congés Personnel</button>
             <button class="btn btn-print" onclick="printPlanning()">Imprimer</button>
         </div>
+
         <div class="week-navigation no-print">
             <button class="btn btn-primary" onclick="previousWeek()">← Semaine précédente</button>
             <span class="week-info" id="weekInfo"></span>
             <button class="btn btn-primary" onclick="nextWeek()">Semaine suivante →</button>
         </div>
+
         <div class="legend">
             <div class="legend-item"><div class="legend-color legend-atelier"></div><span>Personnel Atelier</span></div>
             <div class="legend-item"><div class="legend-color legend-atelier-stagiaire"></div><span>Atelier Stagiaire/Alternant</span></div>
@@ -132,6 +160,7 @@
             <div class="legend-item"><div class="legend-color legend-arret"></div><span>Arrêt de travail</span></div>
             <div class="legend-item"><div class="legend-color holiday"></div><span>Jour férié</span></div>
         </div>
+
         <table class="planning-table" id="planningTable">
             <thead><tr id="tableHeader"></tr></thead>
             <tbody id="tableBody"></tbody>
@@ -185,6 +214,7 @@
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="planning.js"></script>
 </body>
